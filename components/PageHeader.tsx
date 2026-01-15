@@ -8,26 +8,27 @@ interface Breadcrumb {
 interface PageHeaderProps {
     title: string;
     subtitle?: string;
-    breadcrumbs?: Breadcrumb[];
-    actions?: React.ReactNode;
+    breadcrumbs?: any[];
+    actions?: any;
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, breadcrumbs, actions }) => {
     return (
         <div className="flex flex-col gap-2">
             {breadcrumbs && breadcrumbs.length > 0 && (
-                <div className="flex items-center gap-2 text-sm text-slate-500">
-                    {breadcrumbs.map((crumb, index) => (
-                        <React.Fragment key={index}>
-                            <a className="hover:text-[#137fec]" href={crumb.href}>{crumb.label}</a>
-                            {index < breadcrumbs.length - 1 && (
-                                <span className="material-symbols-outlined text-xs">chevron_right</span>
-                            )}
+                <nav className="flex items-center gap-2 mb-2 text-sm">
+                    {breadcrumbs.map((crumb, idx) => (
+                        <React.Fragment key={idx}>
+                            {idx > 0 && <span className="text-slate-400">/</span>}
+                            <button
+                                onClick={crumb.onClick}
+                                className={`font-medium ${crumb.active ? 'text-[#137fec]' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                {crumb.label}
+                            </button>
                         </React.Fragment>
                     ))}
-                    <span className="material-symbols-outlined text-xs">chevron_right</span>
-                    <span className="font-medium text-slate-900">{title}</span>
-                </div>
+                </nav>
             )}
             <div className="flex flex-wrap justify-between items-end gap-4 mt-2">
                 <div>
@@ -36,7 +37,19 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, breadcrumbs, a
                 </div>
                 {actions && (
                     <div className="flex gap-3">
-                        {actions}
+                        {Array.isArray(actions) ? actions.map((action, idx) => (
+                            <button
+                                key={idx}
+                                onClick={action.onClick}
+                                className={`h-11 px-6 rounded-xl font-bold flex items-center gap-2 transition-all active:scale-[0.98] ${action.variant === 'primary'
+                                    ? 'bg-[#137fec] text-white shadow-lg shadow-[#137fec]/20 hover:bg-[#137fec]/90'
+                                    : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {action.icon}
+                                <span>{action.label}</span>
+                            </button>
+                        )) : actions}
                     </div>
                 )}
             </div>

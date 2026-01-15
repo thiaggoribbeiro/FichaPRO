@@ -27,7 +27,7 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
           <div className="w-8 h-8 bg-[#137fec] rounded-lg flex items-center justify-center text-white">
             <span className="material-symbols-outlined text-xl">real_estate_agent</span>
           </div>
-          <h1 className="text-xl font-extrabold tracking-tight">PropSheet<span className="text-[#137fec]">Pro</span></h1>
+          <h1 className="text-xl font-extrabold tracking-tight">Ficha<span className="text-[#137fec]">PRO</span></h1>
         </div>
 
         <nav className="hidden md:flex items-center gap-8">

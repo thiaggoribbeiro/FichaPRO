@@ -13,6 +13,28 @@ import { supabase } from './lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { Plus, Home, ArrowLeft } from 'lucide-react';
 
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: any) { return { hasError: true, error }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-center">
+          <div className="max-w-md bg-white p-8 rounded-2xl shadow-xl border border-red-100">
+            <h1 className="text-2xl font-bold text-slate-900 mb-4">Algo deu errado</h1>
+            <p className="text-slate-600 mb-6">{this.state.error?.message || 'Erro desconhecido'}</p>
+            <button onClick={() => window.location.reload()} className="bg-[#137fec] text-white px-6 py-2 rounded-xl font-bold">Recarregar</button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const App: React.FC = () => {
   const [session, setSession] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -183,7 +205,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 py-8">
           <PageHeader
             title="Base de Imóveis"
-            subtitle={`Gerencie seus ${properties.length} imóveis cadastrados e gere fichas profissionais.`}
+            subtitle={`Gerencie seus ${properties.length} imóveis cadastrados no FichaPRO.`}
             actions={[
               { label: 'Novo Imóvel', onClick: () => setCurrentView('form'), icon: <Plus className="w-4 h-4" />, variant: 'primary' }
             ]}
@@ -357,9 +379,9 @@ const App: React.FC = () => {
             <Sidebar>
               <PhotoGallery
                 images={formData.images}
-                onAddFiles={handleAddFiles}
-                onAddUrl={handleAddImageUrl}
-                onDelete={handleDeleteImage}
+                onAddImages={handleAddFiles}
+                onAddImageUrl={handleAddImageUrl}
+                onDeleteImage={handleDeleteImage}
                 onSetCover={handleSetCover}
               />
             </Sidebar>
@@ -370,4 +392,10 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default function AppWithErrorBoundary() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+}

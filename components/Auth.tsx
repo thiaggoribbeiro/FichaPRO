@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 
-const Auth: React.FC = () => {
+interface AuthProps {
+    onAuthSuccess?: () => void;
+}
+
+const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isRegistering, setIsRegistering] = useState(false);
     const [fullName, setFullName] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     const handleAuth = async (e: React.FormEvent) => {
@@ -33,6 +38,7 @@ const Auth: React.FC = () => {
                     password,
                 });
                 if (error) throw error;
+                if (onAuthSuccess) onAuthSuccess();
             }
         } catch (error: any) {
             setMessage({ type: 'error', text: error.message || 'Ocorreu um erro.' });
@@ -44,23 +50,19 @@ const Auth: React.FC = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
             <div className="max-w-md w-full">
-                {/* Logo Section */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-[#137fec] rounded-2xl shadow-lg shadow-[#137fec]/20 mb-4 animate-bounce-slow">
-                        <span className="material-symbols-outlined text-4xl text-white">real_estate_agent</span>
-                    </div>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-900">
-                        PropSheet<span className="text-[#137fec]">Pro</span>
-                    </h1>
-                    <p className="text-slate-500 mt-2 font-medium">Sua plataforma profissional de fichas imobiliárias</p>
-                </div>
-
                 {/* Card */}
                 <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
                     <div className="p-8">
-                        <h2 className="text-xl font-bold text-slate-900 mb-6">
-                            {isRegistering ? 'Criar nova conta' : 'Entrar na sua conta'}
-                        </h2>
+                        {/* Logo Section */}
+                        <div className="text-center mb-10">
+                            <div className="inline-flex items-center justify-center w-20 h-20 bg-[#137fec] rounded-2xl shadow-lg shadow-[#137fec]/20 mb-4 animate-bounce-slow">
+                                <span className="material-symbols-outlined text-5xl text-white">real_estate_agent</span>
+                            </div>
+                            <h1 className="text-4xl font-black tracking-tight text-slate-900">
+                                Ficha<span className="text-[#137fec]">PRO</span>
+                            </h1>
+                            <p className="text-slate-500 mt-2 font-medium">Sua plataforma profissional de fichas imobiliárias</p>
+                        </div>
 
                         {message && (
                             <div className={`p-4 rounded-xl mb-6 flex items-start gap-3 ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
@@ -110,13 +112,22 @@ const Auth: React.FC = () => {
                                 <div className="relative">
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">lock</span>
                                     <input
-                                        type="password"
+                                        type={showPassword ? 'text' : 'password'}
                                         required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] outline-none transition-all font-medium"
+                                        className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-12 focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] outline-none transition-all font-medium"
                                         placeholder="••••••••"
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined">
+                                            {showPassword ? 'visibility_off' : 'visibility'}
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
 
