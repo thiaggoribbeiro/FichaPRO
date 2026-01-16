@@ -69,6 +69,9 @@ export interface Property {
   aerial_view_url: string | null;       // Visão Aérea
   front_view_url: string | null;        // Vista Frontal
   side_view_url: string | null;         // Vista Lateral
+
+  // Aluguel
+  price: number | null;                 // Valor de Aluguel
 }
 
 export interface PropertyImage {
@@ -103,6 +106,9 @@ export interface PropertyData {
   spuValue: string;
   otherTaxes: string;
 
+  // Aluguel
+  price: string;
+
   // Imagens Específicas
   terrainMarkingUrl: string | null;
   aerialViewUrl: string | null;
@@ -111,4 +117,13 @@ export interface PropertyData {
   matricula: string;
   sequencial: string;
   images: PropertyImage[];
+}
+
+export interface Lead {
+  id: string;
+  property_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  created_at: string;
 }

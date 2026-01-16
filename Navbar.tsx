@@ -35,7 +35,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
         <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden">
-              <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain" />
+              <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain" />
             </div>
             <div className="flex flex-col">
               <h1 className="text-xl tracking-tight leading-tight">
@@ -48,25 +48,25 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
           <nav className="hidden md:flex items-center gap-8">
             <button
               onClick={() => onViewChange('dashboard')}
-              className={`text-sm font-semibold transition-colors ${currentView === 'dashboard' ? 'text-[#137fec]' : 'text-slate-600 hover:text-[#137fec]'}`}
+              className={`text-sm font-semibold transition-colors ${currentView === 'dashboard' ? 'text-[#A64614]' : 'text-slate-600 hover:text-[#A64614]'}`}
             >
-              Painel
+              Dashboard
             </button>
             <button
               onClick={() => onViewChange('properties')}
-              className={`text-sm font-semibold transition-colors ${currentView === 'properties' ? 'text-[#137fec]' : 'text-slate-600 hover:text-[#137fec]'}`}
+              className={`text-sm font-semibold transition-colors ${currentView === 'properties' ? 'text-[#A64614]' : 'text-slate-600 hover:text-[#A64614]'}`}
             >
               Imóveis
             </button>
             <button
               onClick={() => onViewChange('models')}
-              className={`text-sm font-semibold transition-colors ${currentView === 'models' ? 'text-[#137fec]' : 'text-slate-600 hover:text-[#137fec]'}`}
+              className={`text-sm font-semibold transition-colors ${currentView === 'models' ? 'text-[#A64614]' : 'text-slate-600 hover:text-[#A64614]'}`}
             >
               Modelos
             </button>
             <button
               onClick={() => onViewChange('settings')}
-              className={`text-sm font-semibold transition-colors ${currentView === 'settings' ? 'text-[#137fec]' : 'text-slate-600 hover:text-[#137fec]'}`}
+              className={`text-sm font-semibold transition-colors ${currentView === 'settings' ? 'text-[#A64614]' : 'text-slate-600 hover:text-[#A64614]'}`}
             >
               Configurações
             </button>
@@ -84,7 +84,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
                 </div>
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="w-10 h-10 rounded-full border-2 border-[#137fec]/20 bg-[#137fec]/10 flex items-center justify-center text-[#137fec] font-bold overflow-hidden hover:border-[#137fec]/40 transition-all"
+                  className="w-10 h-10 rounded-full border-2 border-[#A64614]/20 bg-[#A64614]/10 flex items-center justify-center text-[#A64614] font-bold overflow-hidden hover:border-[#A64614]/40 transition-all"
                 >
                   {profile?.avatar_url ? (
                     <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
@@ -131,7 +131,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-[400px] overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100 flex flex-col">
             {/* Header com Banner Azul PRO */}
-            <div className="h-32 bg-gradient-to-br from-[#137fec] to-[#0d5fb1] relative shrink-0">
+            <div className="h-32 bg-gradient-to-br from-[#A64614] to-[#8A3A10] relative shrink-0">
               <button
                 onClick={() => setShowProfileModal(false)}
                 className="absolute right-4 top-4 w-8 h-8 flex items-center justify-center bg-black/10 hover:bg-black/20 text-white rounded-full transition-all backdrop-blur-sm"
@@ -141,7 +141,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
 
               {/* Avatar Sobreposto */}
               <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
-                <div className="w-24 h-24 rounded-2xl bg-[#137fec] border-4 border-white shadow-xl flex items-center justify-center text-white text-3xl font-black tracking-tighter">
+                <div className="w-24 h-24 rounded-2xl bg-[#A64614] border-4 border-white shadow-xl flex items-center justify-center text-white text-3xl font-black tracking-tighter">
                   {getInitials(profile?.full_name)}
                 </div>
               </div>
@@ -151,7 +151,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
             <div className="pt-14 pb-8 px-8 space-y-8">
               <div className="text-center">
                 <h4 className="text-2xl font-black text-slate-900 leading-tight">{profile.full_name}</h4>
-                <p className="text-[10px] font-bold text-[#137fec] uppercase tracking-[0.2em] mt-1">
+                <p className="text-[10px] font-bold text-[#A64614] uppercase tracking-[0.2em] mt-1">
                   {profile?.role === 'admin' ? 'Administrador' :
                     profile?.role === 'manager' ? 'Gestor' : 'Usuário'}
                 </p>
@@ -173,13 +173,13 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
 
               <div className="space-y-3 pt-2">
                 <div className="flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-colors group">
-                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-[#137fec]/10 group-hover:text-[#137fec] transition-all">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-[#A64614]/10 group-hover:text-[#A64614] transition-all">
                     <span className="material-symbols-outlined text-lg">mail</span>
                   </div>
                   <span className="text-xs font-semibold">{user?.email}</span>
                 </div>
                 <div className="flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-colors group">
-                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-[#137fec]/10 group-hover:text-[#137fec] transition-all">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-[#A64614]/10 group-hover:text-[#A64614] transition-all">
                     <span className="material-symbols-outlined text-lg">business</span>
                   </div>
                   <span className="text-xs font-semibold">ImobLead Gestão</span>
@@ -188,7 +188,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
 
               <button
                 onClick={() => setShowProfileModal(false)}
-                className="w-full py-4 bg-[#137fec] hover:bg-[#0d5fb1] text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
+                className="w-full py-4 bg-[#A64614] hover:bg-[#8A3A10] text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-orange-900/20 active:scale-[0.98]"
               >
                 Fechar Perfil
               </button>

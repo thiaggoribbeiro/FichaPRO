@@ -62,7 +62,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                                 <span className="font-light">Imob</span><span className="font-semibold">Lead</span>
                             </h1>
                             <p className="text-slate-500 mt-2 font-medium">Sua plataforma profissional de fichas imobiliárias</p>
-                            <p className="text-slate-400 text-xs mt-1 font-medium">v1.2.2</p>
+                            <p className="text-slate-400 text-xs mt-1 font-medium">v1.2.3</p>
                         </div>
 
                         {message && (
@@ -86,7 +86,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                                             required
                                             value={fullName}
                                             onChange={(e) => setFullName(e.target.value)}
-                                            className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] outline-none transition-all font-medium"
+                                            className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] outline-none transition-all font-medium"
                                             placeholder="Ex: João Silva"
                                         />
                                     </div>
@@ -102,7 +102,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] outline-none transition-all font-medium"
+                                        className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] outline-none transition-all font-medium"
                                         placeholder="exemplo@email.com"
                                     />
                                 </div>
@@ -117,7 +117,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                                         required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-12 focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] outline-none transition-all font-medium"
+                                        className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-12 focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] outline-none transition-all font-medium"
                                         placeholder="••••••••"
                                     />
                                     <button
@@ -135,7 +135,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full h-12 bg-[#137fec] text-white rounded-xl font-bold shadow-lg shadow-[#137fec]/20 hover:bg-[#137fec]/90 active:scale-[0.98] transition-all disabled:opacity-70 mt-4"
+                                className="w-full h-12 bg-[#A64614] text-white rounded-xl font-bold shadow-lg shadow-[#A64614]/20 hover:bg-[#A64614]/90 active:scale-[0.98] transition-all disabled:opacity-70 mt-4"
                             >
                                 {loading ? (
                                     <div className="flex items-center justify-center gap-2">
@@ -154,7 +154,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                             {isRegistering ? 'Já tem uma conta?' : 'Não possui uma conta?'}
                             <button
                                 onClick={() => setIsRegistering(!isRegistering)}
-                                className="ml-2 text-[#137fec] font-bold hover:underline"
+                                className="ml-2 text-[#A64614] font-bold hover:underline"
                             >
                                 {isRegistering ? 'Fazer login' : 'Cadastre-se grátis'}
                             </button>

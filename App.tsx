@@ -11,9 +11,13 @@ import PropertyFilters from './components/PropertyFilters';
 import PropertyListView from './components/PropertyListView';
 import Dashboard from './components/Dashboard';
 import PropertyDetails from './components/PropertyDetails';
+import PublicPropertySheet from './components/PublicPropertySheet';
+import LeadCaptureForm from './components/LeadCaptureForm';
+import LeadsListView from './components/LeadsListView';
+import PropertySheetModal from './components/PropertySheetModal';
 import { supabase } from './lib/supabase';
 import { User } from '@supabase/supabase-js';
-import { Plus, Home, ArrowLeft } from 'lucide-react';
+import { Plus, Home, ArrowLeft, DollarSign, Users } from 'lucide-react';
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
   constructor(props: any) {
@@ -28,7 +32,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
           <div className="max-w-md bg-white p-8 rounded-2xl shadow-xl border border-red-100">
             <h1 className="text-2xl font-bold text-slate-900 mb-4">Algo deu errado</h1>
             <p className="text-slate-600 mb-6">{this.state.error?.message || 'Erro desconhecido'}</p>
-            <button onClick={() => window.location.reload()} className="bg-[#137fec] text-white px-6 py-2 rounded-xl font-bold">Recarregar</button>
+            <button onClick={() => window.location.reload()} className="bg-[#A64614] text-white px-6 py-2 rounded-xl font-bold">Recarregar</button>
           </div>
         </div>
       );
@@ -42,9 +46,12 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingAi, setLoadingAi] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'properties' | 'form' | 'details'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'properties' | 'form' | 'details' | 'leads'>('dashboard');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedDetailPropertyId, setSelectedDetailPropertyId] = useState<string | null>(null);
+  const [publicPropertyId, setPublicPropertyId] = useState<string | null>(null);
+  const [isLeadCaptured, setIsLeadCaptured] = useState(false);
+  const [isSheetModalOpen, setIsSheetModalOpen] = useState(false);
 
   // Filter States
   const [searchTerm, setSearchTerm] = useState('');
@@ -79,6 +86,7 @@ const App: React.FC = () => {
     aerialViewUrl: null,
     frontViewUrl: null,
     sideViewUrl: null,
+    price: '',
     matricula: '',
     sequencial: '',
     images: []
@@ -93,6 +101,13 @@ const App: React.FC = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session?.user ?? null);
     });
+
+    const params = new URLSearchParams(window.location.search);
+    const pId = params.get('p');
+    if (pId) {
+      setPublicPropertyId(pId);
+      setIsLeadCaptured(localStorage.getItem(`lead_captured_${pId}`) === 'true');
+    }
 
     return () => subscription.unsubscribe();
   }, []);
@@ -151,6 +166,7 @@ const App: React.FC = () => {
         aerial_view_url: formData.aerialViewUrl,
         front_view_url: formData.frontViewUrl,
         side_view_url: formData.sideViewUrl,
+        price: parseFloat(formData.price || '0'),
 
         // Defaults e outros campos
         has_ficha: !!(formData.terrainMarkingUrl && formData.aerialViewUrl),
@@ -200,6 +216,7 @@ const App: React.FC = () => {
         aerialViewUrl: null,
         frontViewUrl: null,
         sideViewUrl: null,
+        price: '',
         matricula: '',
         sequencial: '',
         images: []
@@ -267,39 +284,8 @@ const App: React.FC = () => {
   const uniqueStates = useMemo(() => Array.from(new Set(properties.map(p => p.state).filter(Boolean))), [properties]);
 
   const handleGenerateFicha = (id: string) => {
-    const property = properties.find(p => p.id === id);
-    if (property) {
-      setSelectedPropertyId(id);
-      setFormData({
-        title: property.name || '',
-        type: (property.property_type as PropertyType) || PropertyType.CASA,
-        description: property.description || '',
-        isComplex: property.is_complex || false,
-        address: property.address || '',
-        number: property.number || '',
-        neighborhood: property.neighborhood || '',
-        city: property.city || '',
-        state: property.state || '',
-        cep: property.zip_code || '',
-        landArea: property.land_area?.toString() || '',
-        builtArea: property.built_area?.toString() || '',
-        mainQuota: property.main_quota?.toString() || '',
-        lateralQuota: property.lateral_quota?.toString() || '',
-        floors: property.floors?.toString() || '',
-        terrainConfig: (property.terrain_config as 'regular' | 'irregular') || 'regular',
-        iptuValue: property.iptu_value?.toString() || '',
-        spuValue: property.spu_value?.toString() || '',
-        otherTaxes: property.other_taxes?.toString() || '',
-        terrainMarkingUrl: property.terrain_marking_url || null,
-        aerialViewUrl: property.aerial_view_url || null,
-        frontViewUrl: property.front_view_url || null,
-        sideViewUrl: property.side_view_url || null,
-        matricula: property.matricula || '',
-        sequencial: property.sequencial || '',
-        images: []
-      });
-      setCurrentView('form');
-    }
+    setSelectedPropertyId(id);
+    setIsSheetModalOpen(true);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -353,7 +339,7 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-[#137fec] border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-[#A64614] border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-500 font-medium">Carregando...</p>
         </div>
       </div>
@@ -361,12 +347,74 @@ const App: React.FC = () => {
   }
 
   if (!session) {
+    if (publicPropertyId) {
+      const property = properties.find(p => p.id === publicPropertyId);
+      if (property && !isLeadCaptured) {
+        return <LeadCaptureForm
+          propertyId={publicPropertyId}
+          propertyName={property.name}
+          onSuccess={() => setIsLeadCaptured(true)}
+        />;
+      }
+      if (property && isLeadCaptured) {
+        return <PublicPropertySheet property={property} onBack={() => {
+          setPublicPropertyId(null);
+          window.history.replaceState({}, '', '/');
+        }} />;
+      }
+      if (!property && !loading) {
+        return (
+          <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+            <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-sm">
+              <h2 className="text-xl font-bold text-slate-800">Imóvel não encontrado</h2>
+              <p className="text-slate-500 mt-2">O link pode estar quebrado ou o imóvel não está mais disponível.</p>
+              <button
+                onClick={() => setPublicPropertyId(null)}
+                className="mt-6 bg-[#A64614] text-white px-6 py-2 rounded-xl font-bold"
+              >
+                Ir para Login
+              </button>
+            </div>
+          </div>
+        );
+      }
+    }
     return <Auth onAuthSuccess={() => fetchProperties()} />;
   }
 
   const renderContent = () => {
     if (currentView === 'dashboard') {
-      return <Dashboard />;
+      return (
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={() => setCurrentView('leads')}
+              className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-slate-700 font-bold hover:bg-slate-50 transition-all text-sm"
+            >
+              <Users className="w-4 h-4 text-[#A64614]" />
+              Ver Leads Capturados
+            </button>
+          </div>
+          <Dashboard />
+        </div>
+      );
+    }
+
+    if (currentView === 'leads') {
+      return (
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <PageHeader
+            title="Leads Capturados"
+            subtitle="Veja quem demonstrou interesse nos seus imóveis através das fichas virtuais."
+            actions={[
+              { label: 'Voltar', onClick: () => setCurrentView('dashboard'), icon: <ArrowLeft className="w-4 h-4" />, variant: 'secondary' }
+            ]}
+          />
+          <div className="mt-8">
+            <LeadsListView />
+          </div>
+        </div>
+      );
     }
 
     if (currentView === 'properties') {
@@ -471,7 +519,7 @@ const App: React.FC = () => {
             <div className="lg:col-span-2 space-y-6">
               <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-50 text-[#137fec] rounded-lg flex items-center justify-center font-bold text-sm">1</div>
+                  <div className="w-8 h-8 bg-orange-50 text-[#A64614] rounded-lg flex items-center justify-center font-bold text-sm">1</div>
                   Informações Básicas
                 </h2>
 
@@ -485,7 +533,7 @@ const App: React.FC = () => {
                       value={formData.title}
                       onChange={handleInputChange}
                       placeholder="Ex: Mansão Moderna com Piscina Infinita"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 placeholder:text-slate-400"
                     />
                   </div>
 
@@ -498,7 +546,7 @@ const App: React.FC = () => {
                         value={formData.type}
                         onChange={handleInputChange}
                         title="Selecione o tipo de imóvel"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 bg-white"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 bg-white"
                       >
                         {Object.values(PropertyType).map(type => (
                           <option key={type} value={type}>{type}</option>
@@ -511,7 +559,7 @@ const App: React.FC = () => {
                         <button
                           type="button"
                           className={`flex-1 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${!formData.isComplex
-                            ? 'border-[#137fec] bg-blue-50 text-blue-700'
+                            ? 'border-[#A64614] bg-orange-50 text-orange-700'
                             : 'border-slate-200 text-slate-500 hover:border-slate-300'
                             }`}
                           onClick={() => setFormData(prev => ({ ...prev, isComplex: false }))}
@@ -521,7 +569,7 @@ const App: React.FC = () => {
                         <button
                           type="button"
                           className={`flex-1 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${formData.isComplex
-                            ? 'border-[#137fec] bg-blue-50 text-blue-700'
+                            ? 'border-[#A64614] bg-orange-50 text-orange-700'
                             : 'border-slate-200 text-slate-500 hover:border-slate-300'
                             }`}
                           onClick={() => setFormData(prev => ({ ...prev, isComplex: true }))}
@@ -542,7 +590,7 @@ const App: React.FC = () => {
                         value={formData.address || ''}
                         onChange={handleInputChange}
                         placeholder="Rua, Avenida, etc."
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 placeholder:text-slate-400"
                       />
                     </div>
                     <div>
@@ -553,7 +601,7 @@ const App: React.FC = () => {
                         value={formData.number || ''}
                         onChange={handleInputChange}
                         placeholder="123"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 placeholder:text-slate-400"
                       />
                     </div>
                   </div>
@@ -568,7 +616,7 @@ const App: React.FC = () => {
                         value={formData.neighborhood || ''}
                         onChange={handleInputChange}
                         placeholder="Centro"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 placeholder:text-slate-400"
                       />
                     </div>
                     <div>
@@ -579,7 +627,7 @@ const App: React.FC = () => {
                         value={formData.city || ''}
                         onChange={handleInputChange}
                         placeholder="São Paulo"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 placeholder:text-slate-400"
                       />
                     </div>
                     <div>
@@ -591,7 +639,7 @@ const App: React.FC = () => {
                         onChange={handleInputChange}
                         placeholder="SP"
                         maxLength={2}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400 uppercase"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 placeholder:text-slate-400 uppercase"
                       />
                     </div>
                   </div>
@@ -600,7 +648,7 @@ const App: React.FC = () => {
 
               <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-50 text-[#137fec] rounded-lg flex items-center justify-center font-bold text-sm">2</div>
+                  <div className="w-8 h-8 bg-orange-50 text-[#A64614] rounded-lg flex items-center justify-center font-bold text-sm">2</div>
                   Apresentação do Imóvel
                 </h2>
 
@@ -610,9 +658,9 @@ const App: React.FC = () => {
                     <button
                       onClick={handleGenerateAiDescription}
                       disabled={loadingAi}
-                      className="flex items-center gap-1.5 text-xs font-bold text-[#137fec] hover:text-blue-700 transition-colors bg-blue-50 px-2 py-1.5 rounded-lg disabled:opacity-50"
+                      className="flex items-center gap-1.5 text-xs font-bold text-[#A64614] hover:text-orange-700 transition-colors bg-orange-50 px-2 py-1.5 rounded-lg disabled:opacity-50"
                     >
-                      <span className="w-3.5 h-3.5 flex items-center justify-center text-[10px] bg-[#137fec] text-white rounded-full">✨</span>
+                      <span className="w-3.5 h-3.5 flex items-center justify-center text-[10px] bg-[#A64614] text-white rounded-full">✨</span>
                       {loadingAi ? 'Gerando...' : 'Gerar com IA'}
                     </button>
                   </div>
@@ -622,7 +670,7 @@ const App: React.FC = () => {
                     value={formData.description}
                     onChange={handleInputChange}
                     placeholder="Destaque as principais características, comodidades e pontos de venda..."
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 resize-none"
                   />
                 </div>
               </section>
@@ -632,7 +680,7 @@ const App: React.FC = () => {
 
               <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-50 text-[#137fec] rounded-lg flex items-center justify-center font-bold text-sm">3</div>
+                  <div className="w-8 h-8 bg-orange-50 text-[#A64614] rounded-lg flex items-center justify-center font-bold text-sm">3</div>
                   Registros
                 </h2>
 
@@ -645,7 +693,7 @@ const App: React.FC = () => {
                       value={formData.matricula}
                       onChange={handleInputChange}
                       placeholder="Ex: 123.456, 789.012"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
                     />
                   </div>
                   <div>
@@ -656,7 +704,7 @@ const App: React.FC = () => {
                       value={formData.sequencial}
                       onChange={handleInputChange}
                       placeholder="Ex: 1.234.567-8"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
                     />
                   </div>
                 </div>
@@ -664,7 +712,7 @@ const App: React.FC = () => {
 
               <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-50 text-[#137fec] rounded-lg flex items-center justify-center font-bold text-sm">4</div>
+                  <div className="w-8 h-8 bg-orange-50 text-[#A64614] rounded-lg flex items-center justify-center font-bold text-sm">4</div>
                   Parâmetros Construtivos
                 </h2>
 
@@ -677,7 +725,7 @@ const App: React.FC = () => {
                       value={formData.landArea || ''}
                       onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
                     />
                   </div>
                   <div>
@@ -688,7 +736,7 @@ const App: React.FC = () => {
                       value={formData.builtArea || ''}
                       onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
                     />
                   </div>
                   <div>
@@ -699,7 +747,7 @@ const App: React.FC = () => {
                       value={formData.mainQuota || ''}
                       onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
                     />
                   </div>
                   <div>
@@ -710,7 +758,7 @@ const App: React.FC = () => {
                       value={formData.lateralQuota || ''}
                       onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
                     />
                   </div>
                   <div>
@@ -721,7 +769,7 @@ const App: React.FC = () => {
                       value={formData.floors || ''}
                       onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
                     />
                   </div>
                 </div>
@@ -736,7 +784,7 @@ const App: React.FC = () => {
                         value="regular"
                         checked={formData.terrainConfig === 'regular'}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-[#137fec]"
+                        className="w-4 h-4 text-[#A64614]"
                       />
                       <span className="text-sm text-slate-700">Regular</span>
                     </label>
@@ -747,7 +795,7 @@ const App: React.FC = () => {
                         value="irregular"
                         checked={formData.terrainConfig === 'irregular'}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-[#137fec]"
+                        className="w-4 h-4 text-[#A64614]"
                       />
                       <span className="text-sm text-slate-700">Irregular</span>
                     </label>
@@ -758,7 +806,7 @@ const App: React.FC = () => {
               {/* Seção 4: Impostos */}
               <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-50 text-[#137fec] rounded-lg flex items-center justify-center font-bold text-sm">5</div>
+                  <div className="w-8 h-8 bg-orange-50 text-[#A64614] rounded-lg flex items-center justify-center font-bold text-sm">5</div>
                   Impostos
                 </h2>
 
@@ -771,7 +819,7 @@ const App: React.FC = () => {
                       value={formData.iptuValue || ''}
                       onChange={handleInputChange}
                       placeholder="R$ 0,00"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
                     />
                   </div>
                   <div>
@@ -782,7 +830,7 @@ const App: React.FC = () => {
                       value={formData.spuValue || ''}
                       onChange={handleInputChange}
                       placeholder="R$ 0,00"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
                     />
                   </div>
                   <div>
@@ -793,7 +841,31 @@ const App: React.FC = () => {
                       value={formData.otherTaxes || ''}
                       onChange={handleInputChange}
                       placeholder="R$ 0,00"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-orange-50 text-[#A64614] rounded-lg flex items-center justify-center font-bold text-sm">6</div>
+                  Informações de Aluguel
+                </h2>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Valor de Aluguel (R$)</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <DollarSign size={18} />
+                    </div>
+                    <input
+                      type="text"
+                      name="price"
+                      value={formData.price || ''}
+                      onChange={handleInputChange}
+                      placeholder="0.000.000"
+                      className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
                     />
                   </div>
                 </div>
@@ -804,7 +876,7 @@ const App: React.FC = () => {
             <Sidebar>
               <div className="space-y-4">
                 <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#137fec]">photo_library</span>
+                  <span className="material-symbols-outlined text-[#A64614]">photo_library</span>
                   Imagens do Imóvel
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -858,6 +930,16 @@ const App: React.FC = () => {
       onViewChange={(view: any) => setCurrentView(view)}
     >
       {renderContent()}
+
+      {isSheetModalOpen && selectedPropertyId && (
+        <PropertySheetModal
+          property={properties.find(p => p.id === selectedPropertyId)!}
+          onClose={() => {
+            setIsSheetModalOpen(false);
+            setSelectedPropertyId(null);
+          }}
+        />
+      )}
     </Layout>
   );
 };
@@ -918,7 +1000,7 @@ const ImageUploadCard = ({ title, description, icon, initialValue, onChange }: {
 
   return (
     <div
-      className={`border-2 border-dashed rounded-xl p-3 transition-all cursor-pointer ${isDragging ? 'border-[#137fec] bg-slate-50' : 'border-slate-200 hover:border-[#137fec]'
+      className={`border-2 border-dashed rounded-xl p-3 transition-all cursor-pointer ${isDragging ? 'border-[#A64614] bg-slate-50' : 'border-slate-200 hover:border-[#A64614]'
         }`}
       onDrop={handleDrop}
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
