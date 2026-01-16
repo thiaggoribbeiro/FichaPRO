@@ -139,7 +139,6 @@ const App: React.FC = () => {
         built_area: parseFloat(formData.builtArea || '0'),
         main_quota: parseFloat(formData.mainQuota || '0'),
         lateral_quota: parseFloat(formData.lateralQuota || '0'),
-        floors: parseInt(formData.floors || '0'),
         terrain_config: formData.terrainConfig,
 
         // Impostos
@@ -153,14 +152,8 @@ const App: React.FC = () => {
         front_view_url: formData.frontViewUrl,
         side_view_url: formData.sideViewUrl,
 
-        // Registros
-        matricula: formData.matricula,
-        sequencial: formData.sequencial,
-
         // Defaults e outros campos
-        status: PropertyStatus.DISPONIVEL,
         has_ficha: !!(formData.terrainMarkingUrl && formData.aerialViewUrl),
-        owner: 'Plus Imóveis'
       };
 
       let result;
@@ -446,6 +439,7 @@ const App: React.FC = () => {
             setSelectedDetailPropertyId(null);
           }}
           onGenerateFicha={handleGenerateFicha}
+          onEditProperty={handleGenerateFicha}
           user={session}
         />
       );
