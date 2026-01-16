@@ -145,7 +145,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
 
     const detailCards = [
         { label: 'Valor de Mercado', value: formatCurrency(displayMarketValue || 0), icon: <DollarSign className="w-5 h-5" />, color: 'bg-emerald-50 text-emerald-600' },
-        { label: 'Área Construída', value: `${displayBuiltArea || 0} m²`, icon: <Square className="w-5 h-5" />, color: 'bg-blue-50 text-blue-600' },
+        { label: 'Área Construída', value: `${displayBuiltArea || 0} m²`, icon: <Square className="w-5 h-5" />, color: 'bg-blue-50 text-orange-600' },
         { label: 'Área do Terreno', value: `${displayLandArea || 0} m²`, icon: <Building2 className="w-5 h-5" />, color: 'bg-indigo-50 text-indigo-600' },
         { label: 'Aluguel Mercado', value: formatCurrency(displayMarketRent || 0), icon: <Briefcase className="w-5 h-5" />, color: 'bg-purple-50 text-purple-600' },
     ];
@@ -202,11 +202,10 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                         variant: 'secondary'
                     },
                     {
-                        label: generatingPDF ? 'Gerando...' : (property.has_ficha ? 'Atualizar Ficha' : 'Gerar Ficha'),
-                        onClick: handleGeneratePDF,
-                        icon: generatingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />,
-                        variant: 'primary',
-                        disabled: generatingPDF
+                        label: 'Ver Ficha',
+                        onClick: () => onGenerateFicha(property.id),
+                        icon: <FileText className="w-4 h-4" />,
+                        variant: 'primary'
                     }
                 ]}
             />
@@ -227,7 +226,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                 <div className="lg:col-span-2 space-y-6">
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                         <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-blue-600" />
+                            <FileText className="w-5 h-5 text-orange-600" />
                             Informações Gerais
                         </h2>
 
@@ -243,7 +242,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                         {isComplex && units.length > 0 && (
                             <div className="mt-8 pt-8 border-t border-slate-100">
                                 <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                                    <Home className="w-5 h-5 text-blue-600" />
+                                    <Home className="w-5 h-5 text-orange-600" />
                                     Unidades do Complexo ({units.length})
                                 </h3>
                                 <div className="space-y-3">
@@ -268,7 +267,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
 
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                         <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-blue-600" />
+                            <MapPin className="w-5 h-5 text-orange-600" />
                             Localização
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -283,7 +282,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
 
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                         <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <DollarSign className="w-5 h-5 text-blue-600" />
+                            <DollarSign className="w-5 h-5 text-orange-600" />
                             Dados Financeiros
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
@@ -298,7 +297,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                     {/* Parâmetros Construtivos */}
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                         <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <Ruler className="w-5 h-5 text-blue-600" />
+                            <Ruler className="w-5 h-5 text-orange-600" />
                             Parâmetros Construtivos
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
@@ -314,7 +313,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                     {/* Registros */}
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                         <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-blue-600" />
+                            <FileText className="w-5 h-5 text-orange-600" />
                             Registros
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
@@ -326,7 +325,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                     {/* Impostos */}
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                         <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-blue-600" />
+                            <FileText className="w-5 h-5 text-orange-600" />
                             Impostos
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
@@ -341,7 +340,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                     {/* Galeria de Fotos Lateral */}
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                         <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <Home className="w-5 h-5 text-blue-600" />
+                            <Home className="w-5 h-5 text-orange-600" />
                             Galeria de Fotos
                         </h2>
                         <div className="space-y-4">
@@ -408,7 +407,7 @@ const ImageCard = ({ title, imageUrl, fallback, onEdit, onDelete }: {
                         className="p-2 bg-white rounded-full shadow-lg hover:bg-blue-50 transition-colors"
                         title="Editar imagem"
                     >
-                        <Edit3 className="w-4 h-4 text-blue-600" />
+                        <Edit3 className="w-4 h-4 text-orange-600" />
                     </button>
                 )}
                 {onDelete && (

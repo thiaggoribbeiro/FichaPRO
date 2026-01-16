@@ -313,7 +313,7 @@ const PropertyPDF: React.FC<PropertyPDFProps> = ({ property }) => {
                     <View style={styles.presentationContainer}>
                         <View style={styles.presentationText}>
                             <Text style={styles.presentationDescription}>
-                                {property.tenant_category || 'Imóvel disponível para locação ou venda. Entre em contato para mais informações sobre este imóvel.'}
+                                {property.tenant_category || 'Imóvel disponível para locação. Entre em contato para mais informações sobre este imóvel.'}
                             </Text>
                         </View>
 
@@ -385,7 +385,7 @@ const PropertyPDF: React.FC<PropertyPDFProps> = ({ property }) => {
 
                             <View style={styles.detailRow}>
                                 <Text style={styles.detailLabel}>Cota Principal:</Text>
-                                <Text style={styles.detailValue}>{formatNumber(property.main_quota || 0)} m²</Text>
+                                <Text style={styles.detailValue}>{formatNumber(property.main_quota || 0)} m</Text>
                             </View>
 
                             <View style={styles.detailRow}>

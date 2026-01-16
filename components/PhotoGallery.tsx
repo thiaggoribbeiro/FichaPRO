@@ -38,7 +38,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
     <section className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 flex flex-col h-full">
       <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#137fec]">add_a_photo</span>
+          <span className="material-symbols-outlined text-[#A64614]">add_a_photo</span>
           <h3 className="text-lg font-bold">Galeria de Fotos</h3>
         </div>
         <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">
@@ -50,7 +50,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
         {/* Upload Area */}
         <div
           onClick={() => document.getElementById('file-upload')?.click()}
-          className="border-2 border-dashed border-[#137fec]/30 bg-[#137fec]/5 hover:bg-[#137fec]/10 transition-colors rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer"
+          className="border-2 border-dashed border-[#A64614]/30 bg-[#A64614]/5 hover:bg-[#A64614]/10 transition-colors rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer"
         >
           <input
             type="file"
@@ -60,11 +60,11 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             className="hidden"
             onChange={handleFileChange}
           />
-          <div className="w-12 h-12 bg-[#137fec]/20 rounded-full flex items-center justify-center text-[#137fec] mb-3">
+          <div className="w-12 h-12 bg-[#A64614]/20 rounded-full flex items-center justify-center text-[#A64614] mb-3">
             <span className="material-symbols-outlined text-3xl">upload_file</span>
           </div>
           <p className="text-sm font-bold">Arraste e solte fotos aqui</p>
-          <p className="text-xs text-slate-500 mt-1">ou <span className="text-[#137fec] underline">clique para selecionar</span></p>
+          <p className="text-xs text-slate-500 mt-1">ou <span className="text-[#A64614] underline">clique para selecionar</span></p>
         </div>
 
         {/* URL Input Toggle */}
@@ -72,7 +72,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
           {!showUrlInput ? (
             <button
               onClick={() => setShowUrlInput(true)}
-              className="text-xs font-bold text-[#137fec] flex items-center gap-1 hover:underline"
+              className="text-xs font-bold text-[#A64614] flex items-center gap-1 hover:underline"
             >
               <span className="material-symbols-outlined text-sm">link</span>
               Adicionar por link direto (URL)
@@ -84,11 +84,11 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
                 placeholder="Cole o link da imagem aqui..."
-                className="flex-1 text-xs border border-slate-200 rounded px-3 py-2 outline-none focus:ring-1 focus:ring-[#137fec]"
+                className="flex-1 text-xs border border-slate-200 rounded px-3 py-2 outline-none focus:ring-1 focus:ring-[#A64614]"
               />
               <button
                 onClick={handleUrlSubmit}
-                className="bg-[#137fec] text-white text-xs px-3 py-1 rounded font-bold"
+                className="bg-[#A64614] text-white text-xs px-3 py-1 rounded font-bold"
               >
                 Add
               </button>
@@ -110,7 +110,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             className={`relative group rounded-lg overflow-hidden border border-slate-200 shadow-sm ${img.isCover ? 'col-span-2 aspect-video' : 'aspect-square'}`}
           >
             {img.isCover && (
-              <div className="absolute top-2 left-2 z-10 bg-[#137fec] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">
+              <div className="absolute top-2 left-2 z-10 bg-[#A64614] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">
                 FOTO DE CAPA
               </div>
             )}

@@ -27,7 +27,7 @@ const Footer: React.FC<FooterProps> = ({ onSaveDraft, onGeneratePdf, isSaving = 
                     </button>
                     <button
                         onClick={onGeneratePdf}
-                        className="flex items-center gap-2 px-8 py-3 bg-[#137fec] text-white rounded-lg text-sm font-bold hover:bg-[#137fec]/90 shadow-lg shadow-[#137fec]/20 transition-all active:scale-95"
+                        className="flex items-center gap-2 px-8 py-3 bg-[#A64614] text-white rounded-lg text-sm font-bold hover:bg-[#A64614]/90 shadow-lg shadow-[#A64614]/20 transition-all active:scale-95"
                     >
                         <span className="material-symbols-outlined text-xl">picture_as_pdf</span>
                         Gerar Ficha em PDF

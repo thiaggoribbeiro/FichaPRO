@@ -1,6 +1,6 @@
 import React from 'react';
 import { Property, PropertyStatus } from '../types';
-import { MapPin, FileText, RefreshCw, ChevronRight } from 'lucide-react';
+import { MapPin, FileText, ChevronRight } from 'lucide-react';
 
 interface PropertyListViewProps {
     properties: Property[];
@@ -71,13 +71,10 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ properties, onGener
                                     <div className="flex items-center justify-end gap-3">
                                         <button
                                             onClick={() => onGenerateFicha(property.id)}
-                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${property.has_ficha
-                                                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                                : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-                                                }`}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-[#A64614] hover:bg-blue-600 text-white shadow-sm"
                                         >
-                                            {property.has_ficha ? <RefreshCw className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
-                                            {property.has_ficha ? 'Atualizar' : 'Gerar Ficha'}
+                                            <FileText className="w-3.5 h-3.5" />
+                                            Ver Ficha
                                         </button>
                                         <button
                                             onClick={() => onViewDetails(property.id)}

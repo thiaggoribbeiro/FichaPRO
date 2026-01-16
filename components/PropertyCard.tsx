@@ -1,6 +1,6 @@
 import React from 'react';
 import { Property, PropertyStatus } from '../types';
-import { MapPin, Home, ArrowRight, FileText, RefreshCw } from 'lucide-react';
+import { MapPin, ArrowRight, FileText } from 'lucide-react';
 
 interface PropertyCardProps {
     property: Property;
@@ -70,24 +70,18 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onGenerateFicha, 
                 <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
                     <button
                         onClick={() => onGenerateFicha(property.id)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${property.has_ficha
-                            ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                            : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-                            }`}
+                        className="flex-1 flex items-center justify-center gap-2 bg-[#A64614] hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-orange-100"
                     >
-                        {property.has_ficha ? (
-                            <><RefreshCw className="w-4 h-4" /> Atualizar Ficha</>
-                        ) : (
-                            <><FileText className="w-4 h-4" /> Gerar Ficha</>
-                        )}
+                        <FileText className="w-4 h-4" />
+                        Ver Ficha
                     </button>
 
                     <button
                         onClick={() => onViewDetails(property.id)}
-                        className="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-50 transition-all flex items-center gap-1 group/btn text-sm font-medium"
+                        className="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-50 transition-all flex items-center gap-1 group/btn text-xs font-bold shrink-0"
                     >
                         Detalhes
-                        <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
+                        <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
                     </button>
                 </div>
             </div>

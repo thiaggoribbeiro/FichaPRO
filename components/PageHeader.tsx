@@ -22,7 +22,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, breadcrumbs, a
                             {idx > 0 && <span className="text-slate-400">/</span>}
                             <button
                                 onClick={crumb.onClick}
-                                className={`font-medium ${crumb.active ? 'text-[#137fec]' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`font-medium ${crumb.active ? 'text-[#A64614]' : 'text-slate-400 hover:text-slate-600'}`}
                             >
                                 {crumb.label}
                             </button>
@@ -42,7 +42,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, breadcrumbs, a
                                 key={idx}
                                 onClick={action.onClick}
                                 className={`h-11 px-6 rounded-xl font-bold flex items-center gap-2 transition-all active:scale-[0.98] ${action.variant === 'primary'
-                                    ? 'bg-[#137fec] text-white shadow-lg shadow-[#137fec]/20 hover:bg-[#137fec]/90'
+                                    ? 'bg-[#A64614] text-white shadow-lg shadow-[#A64614]/20 hover:bg-[#A64614]/90'
                                     : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
                                     }`}
                             >
