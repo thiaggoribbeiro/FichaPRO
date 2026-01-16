@@ -41,7 +41,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
               <h1 className="text-xl tracking-tight leading-tight">
                 <span className="font-light">Imob</span><span className="font-semibold">Lead</span>
               </h1>
-              <span className="text-[10px] text-slate-400 font-medium">v1.2.4</span>
+              <span className="text-[10px] text-slate-400 font-medium">v1.2.5</span>
             </div>
           </div>
 
