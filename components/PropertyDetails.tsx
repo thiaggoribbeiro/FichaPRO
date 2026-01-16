@@ -32,10 +32,11 @@ interface PropertyDetailsProps {
     allProperties: Property[];
     onBack: () => void;
     onGenerateFicha: (id: string) => void;
+    onEditProperty?: (id: string) => void; // Prop para editar imóvel
     user?: any; // Adicionando prop user
 }
 
-const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperties, onBack, onGenerateFicha, user }) => {
+const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperties, onBack, onGenerateFicha, onEditProperty, user }) => {
     const [generatingPDF, setGeneratingPDF] = useState(false);
 
     const handleGeneratePDF = async () => {
@@ -155,7 +156,12 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
 
         if (action === 'edit') {
             if (['admin', 'manager', 'user'].includes(userRole)) {
-                alert(`Funcionalidade de Edição (Role: ${userRole}) - Em breve`);
+                // Chamar a função de edição passada pelo App.tsx
+                if (onEditProperty) {
+                    onEditProperty(property.id);
+                } else {
+                    alert('Funcionalidade de edição não disponível.');
+                }
             } else {
                 alert('Acesso Negado: Apenas usuários autenticados podem editar imóveis. Visitantes não possuem permissão.');
             }
