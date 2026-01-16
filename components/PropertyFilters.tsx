@@ -13,6 +13,8 @@ interface PropertyFiltersProps {
     setSelectedStatus: (val: string) => void;
     selectedFichaStatus: string;
     setSelectedFichaStatus: (val: string) => void;
+    selectedCategory: string;
+    setSelectedCategory: (val: any) => void;
     viewMode: 'cards' | 'list';
     setViewMode: (mode: 'cards' | 'list') => void;
     cities: string[];
@@ -25,6 +27,7 @@ const PropertyFilters: React.FC<PropertyFiltersProps> = ({
     selectedState, setSelectedState,
     selectedStatus, setSelectedStatus,
     selectedFichaStatus, setSelectedFichaStatus,
+    selectedCategory, setSelectedCategory,
     viewMode, setViewMode,
     cities, states
 }) => {
@@ -64,7 +67,7 @@ const PropertyFilters: React.FC<PropertyFiltersProps> = ({
             </div>
 
             {/* Middle row: Multi-select filtering */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-slate-100">
                 <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Cidade</label>
                     <div className="relative">
@@ -73,6 +76,7 @@ const PropertyFilters: React.FC<PropertyFiltersProps> = ({
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none bg-white text-slate-700 text-sm"
                             value={selectedCity}
                             onChange={(e) => setSelectedCity(e.target.value)}
+                            title="Filtrar por Cidade"
                         >
                             <option value="">Todas as cidades</option>
                             {cities.map(city => (
@@ -90,6 +94,7 @@ const PropertyFilters: React.FC<PropertyFiltersProps> = ({
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none bg-white text-slate-700 text-sm"
                             value={selectedState}
                             onChange={(e) => setSelectedState(e.target.value)}
+                            title="Filtrar por Estado"
                         >
                             <option value="">Todas as UFs</option>
                             {states.map(state => (
@@ -107,6 +112,7 @@ const PropertyFilters: React.FC<PropertyFiltersProps> = ({
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none bg-white text-slate-700 text-sm"
                             value={selectedStatus}
                             onChange={(e) => setSelectedStatus(e.target.value)}
+                            title="Filtrar por Situação"
                         >
                             <option value="">Todas as situações</option>
                             {Object.values(PropertyStatus).map(status => (
@@ -124,10 +130,28 @@ const PropertyFilters: React.FC<PropertyFiltersProps> = ({
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none bg-white text-slate-700 text-sm"
                             value={selectedFichaStatus}
                             onChange={(e) => setSelectedFichaStatus(e.target.value)}
+                            title="Filtrar por Status da Ficha"
                         >
                             <option value="">Todos</option>
                             <option value="with">Com Ficha Gerada</option>
                             <option value="without">Sem Ficha Gerada</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Categoria</label>
+                    <div className="relative">
+                        <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <select
+                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none bg-white text-slate-700 text-sm"
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            title="Filtrar por Categoria"
+                        >
+                            <option value="all">Todos</option>
+                            <option value="unique">Imóvel Único</option>
+                            <option value="complex">Complexo</option>
                         </select>
                     </div>
                 </div>

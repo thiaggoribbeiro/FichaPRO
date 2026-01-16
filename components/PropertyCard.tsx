@@ -21,18 +21,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onGenerateFicha, 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all group flex flex-col h-full">
             {/* Property Image Placeholder */}
             <div className="relative h-48 bg-slate-100 overflow-hidden">
-                {property.image_url ? (
-                    <img
-                        src={property.image_url}
-                        alt={property.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-4 text-center">
-                        <Home className="w-12 h-12 mb-2 opacity-20" />
-                        <span className="text-xs uppercase tracking-wider font-semibold opacity-40">{property.property_type || 'Imóvel'}</span>
-                    </div>
-                )}
+                <img
+                    src={property.image_url || '/bg.png'}
+                    alt={property.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/bg.png';
+                    }}
+                />
 
                 {/* Status Badge */}
                 <div className={`absolute top-3 right-3 px-2 py-1 rounded-md text-[10px] font-bold uppercase border ${statusColors[property.status] || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
@@ -40,8 +37,19 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onGenerateFicha, 
                 </div>
 
                 {/* Property Type Badge */}
-                <div className="absolute bottom-3 left-3 px-2 py-1 rounded-md bg-white/90 backdrop-blur-sm text-slate-700 text-[10px] font-semibold border border-white/20">
-                    {property.property_type}
+                <div className="absolute bottom-3 left-3 flex gap-2">
+                    <div className="px-2 py-1 rounded-md bg-white/90 backdrop-blur-sm text-slate-700 text-[10px] font-semibold border border-white/20">
+                        {property.property_type}
+                    </div>
+                    {property.is_complex ? (
+                        <div className="px-2 py-1 rounded-md bg-blue-600 text-white text-[10px] font-bold uppercase shadow-sm">
+                            Complexo
+                        </div>
+                    ) : (
+                        <div className="px-2 py-1 rounded-md bg-slate-500 text-white text-[10px] font-bold uppercase shadow-sm">
+                            Único
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -63,8 +71,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onGenerateFicha, 
                     <button
                         onClick={() => onGenerateFicha(property.id)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${property.has_ficha
-                                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                            ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                            : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
                             }`}
                     >
                         {property.has_ficha ? (

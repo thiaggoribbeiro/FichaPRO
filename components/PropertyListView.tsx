@@ -42,9 +42,16 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ properties, onGener
                             <tr key={property.id} className="hover:bg-slate-50/50 transition-colors group">
                                 <td className="px-6 py-4">
                                     <div className="flex flex-col">
-                                        <span className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors cursor-pointer" onClick={() => onViewDetails(property.id)}>
-                                            {property.name}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors cursor-pointer" onClick={() => onViewDetails(property.id)}>
+                                                {property.name}
+                                            </span>
+                                            {property.is_complex ? (
+                                                <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-blue-100 text-blue-600 uppercase">Complexo</span>
+                                            ) : (
+                                                <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-slate-100 text-slate-600 uppercase">Único</span>
+                                            )}
+                                        </div>
                                         <span className="text-xs text-slate-400 font-mono mt-0.5">#{property.registration || 'S/M'}</span>
                                     </div>
                                 </td>
@@ -65,8 +72,8 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ properties, onGener
                                         <button
                                             onClick={() => onGenerateFicha(property.id)}
                                             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${property.has_ficha
-                                                    ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                                    : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                                                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                                : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
                                                 }`}
                                         >
                                             {property.has_ficha ? <RefreshCw className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
