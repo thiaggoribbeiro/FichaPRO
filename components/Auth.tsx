@@ -62,7 +62,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                                 <span className="font-light">Imob</span><span className="font-semibold">Lead</span>
                             </h1>
                             <p className="text-slate-500 mt-2 font-medium">Sua plataforma profissional de fichas imobiliárias</p>
-                            <p className="text-slate-400 text-xs mt-1 font-medium">v1.2.3</p>
+                            <p className="text-slate-400 text-xs mt-1 font-medium">v1.2.4</p>
                         </div>
 
                         {message && (
