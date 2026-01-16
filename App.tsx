@@ -50,6 +50,8 @@ const App: React.FC = () => {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedDetailPropertyId, setSelectedDetailPropertyId] = useState<string | null>(null);
   const [publicPropertyId, setPublicPropertyId] = useState<string | null>(null);
+  const [publicProperty, setPublicProperty] = useState<Property | null>(null);
+  const [publicPropertyLoading, setPublicPropertyLoading] = useState(false);
   const [isLeadCaptured, setIsLeadCaptured] = useState(false);
   const [isSheetModalOpen, setIsSheetModalOpen] = useState(false);
 
@@ -107,6 +109,8 @@ const App: React.FC = () => {
     if (pId) {
       setPublicPropertyId(pId);
       setIsLeadCaptured(localStorage.getItem(`lead_captured_${pId}`) === 'true');
+      // Fetch public property directly
+      fetchPublicProperty(pId);
     }
 
     return () => subscription.unsubscribe();
@@ -126,6 +130,29 @@ const App: React.FC = () => {
 
     if (error) console.error('Erro ao buscar imóveis:', error.message);
     else setProperties(data || []);
+  };
+
+  const fetchPublicProperty = async (propertyId: string) => {
+    setPublicPropertyLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', propertyId)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar imóvel público:', error.message);
+        setPublicProperty(null);
+      } else {
+        setPublicProperty(data);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar imóvel público:', err);
+      setPublicProperty(null);
+    } finally {
+      setPublicPropertyLoading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -348,21 +375,33 @@ const App: React.FC = () => {
 
   if (!session) {
     if (publicPropertyId) {
-      const property = properties.find(p => p.id === publicPropertyId);
-      if (property && !isLeadCaptured) {
+      // Show loading while fetching public property
+      if (publicPropertyLoading) {
+        return (
+          <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-[#A64614] border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-slate-500 font-medium">Carregando ficha...</p>
+            </div>
+          </div>
+        );
+      }
+
+      if (publicProperty && !isLeadCaptured) {
         return <LeadCaptureForm
           propertyId={publicPropertyId}
-          propertyName={property.name}
+          propertyName={publicProperty.name}
           onSuccess={() => setIsLeadCaptured(true)}
         />;
       }
-      if (property && isLeadCaptured) {
-        return <PublicPropertySheet property={property} onBack={() => {
+      if (publicProperty && isLeadCaptured) {
+        return <PublicPropertySheet property={publicProperty} onBack={() => {
           setPublicPropertyId(null);
+          setPublicProperty(null);
           window.history.replaceState({}, '', '/');
         }} />;
       }
-      if (!property && !loading) {
+      if (!publicProperty && !publicPropertyLoading) {
         return (
           <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
             <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-sm">
