@@ -23,6 +23,7 @@ export interface Property {
   owner: string;
   is_complex: boolean;
   name: string;
+  description: string;
   property_type: string;
   address: string;
   number: string;
@@ -47,7 +48,24 @@ export interface Property {
   rent_sqm: number;
   has_ficha: boolean;
   image_url: string | null;
+  parent_id: string | null;
   created_at?: string;
+
+  // Parâmetros Construtivos
+  main_quota: number;           // Cota Principal (m²)
+  lateral_quota: number;        // Cota Lateral (m²)
+  terrain_config: 'regular' | 'irregular';  // Configuração do Terreno
+
+  // Impostos
+  iptu_value: number;           // Valor do IPTU (R$)
+  spu_value: number;            // Valor SPU (R$)
+  other_taxes: number;          // Outros Impostos (R$)
+
+  // Imagens Específicas
+  terrain_marking_url: string | null;   // Marcação do Terreno
+  aerial_view_url: string | null;       // Visão Aérea
+  front_view_url: string | null;        // Vista Frontal
+  side_view_url: string | null;         // Vista Lateral
 }
 
 export interface PropertyImage {
@@ -60,13 +78,31 @@ export interface PropertyImage {
 export interface PropertyData {
   title: string;
   type: PropertyType;
-  price: string;
-  area: string;
-  bedrooms: string;
-  bathrooms: string;
   description: string;
+  isComplex: boolean;
   address: string;
+  number: string;
+  neighborhood: string;
   city: string;
+  state: string;
   cep: string;
+
+  // Parâmetros Construtivos
+  builtArea: string;
+  mainQuota: string;
+  lateralQuota: string;
+  terrainConfig: 'regular' | 'irregular';
+
+  // Impostos
+  iptuValue: string;
+  spuValue: string;
+  otherTaxes: string;
+
+  // Imagens Específicas
+  terrainMarkingUrl: string | null;
+  aerialViewUrl: string | null;
+  frontViewUrl: string | null;
+  sideViewUrl: string | null;
+
   images: PropertyImage[];
 }

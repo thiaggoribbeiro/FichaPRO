@@ -9,6 +9,8 @@ import Auth from './components/Auth';
 import PropertyCard from './components/PropertyCard';
 import PropertyFilters from './components/PropertyFilters';
 import PropertyListView from './components/PropertyListView';
+import Dashboard from './components/Dashboard';
+import PropertyDetails from './components/PropertyDetails';
 import { supabase } from './lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { Plus, Home, ArrowLeft } from 'lucide-react';
@@ -40,8 +42,9 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingAi, setLoadingAi] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
-  const [currentView, setCurrentView] = useState<'list' | 'form'>('list');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'properties' | 'form' | 'details'>('dashboard');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [selectedDetailPropertyId, setSelectedDetailPropertyId] = useState<string | null>(null);
 
   // Filter States
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,19 +52,31 @@ const App: React.FC = () => {
   const [selectedState, setSelectedState] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedFichaStatus, setSelectedFichaStatus] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'complex' | 'unique'>('all');
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
 
   const [formData, setFormData] = useState<PropertyData>({
     title: '',
     type: PropertyType.CASA,
-    price: '',
-    area: '',
-    bedrooms: '',
-    bathrooms: '',
     description: '',
+    isComplex: false,
     address: '',
+    number: '',
+    neighborhood: '',
     city: '',
+    state: '',
     cep: '',
+    builtArea: '',
+    mainQuota: '',
+    lateralQuota: '',
+    terrainConfig: 'regular',
+    iptuValue: '',
+    spuValue: '',
+    otherTaxes: '',
+    terrainMarkingUrl: null,
+    aerialViewUrl: null,
+    frontViewUrl: null,
+    sideViewUrl: null,
     images: []
   });
 
@@ -94,8 +109,133 @@ const App: React.FC = () => {
     else setProperties(data || []);
   };
 
+  const handleSave = async () => {
+    if (!formData.title) {
+      alert('Por favor, insira pelo menos um título para o imóvel.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const propertyToSave = {
+        name: formData.title,
+        property_type: formData.type,
+        address: formData.address,
+        number: formData.number,
+        neighborhood: formData.neighborhood,
+        city: formData.city,
+        state: formData.state,
+        zip_code: formData.cep,
+        is_complex: formData.isComplex,
+        description: formData.description,
+
+        // Parâmetros Construtivos
+        built_area: parseFloat(formData.builtArea || '0'),
+        main_quota: parseFloat(formData.mainQuota || '0'),
+        lateral_quota: parseFloat(formData.lateralQuota || '0'),
+        terrain_config: formData.terrainConfig,
+
+        // Impostos
+        iptu_value: parseFloat(formData.iptuValue || '0'),
+        spu_value: parseFloat(formData.spuValue || '0'),
+        other_taxes: parseFloat(formData.otherTaxes || '0'),
+
+        // Imagens
+        terrain_marking_url: formData.terrainMarkingUrl,
+        aerial_view_url: formData.aerialViewUrl,
+        front_view_url: formData.frontViewUrl,
+        side_view_url: formData.sideViewUrl,
+
+        // Defaults e outros campos
+        status: PropertyStatus.DISPONIVEL,
+        has_ficha: !!(formData.terrainMarkingUrl && formData.aerialViewUrl),
+        owner: 'Plus Imóveis'
+      };
+
+      let result;
+      if (selectedPropertyId) {
+        result = await supabase
+          .from('properties')
+          .update(propertyToSave)
+          .eq('id', selectedPropertyId);
+      } else {
+        result = await supabase
+          .from('properties')
+          .insert([propertyToSave]);
+      }
+
+      if (result.error) throw result.error;
+
+      alert(selectedPropertyId ? 'Imóvel atualizado com sucesso!' : 'Imóvel cadastrado com sucesso!');
+      await fetchProperties();
+      setCurrentView('properties');
+
+      // Limpar form
+      setSelectedPropertyId(null);
+      setFormData({
+        title: '',
+        type: PropertyType.CASA,
+        description: '',
+        isComplex: false,
+        address: '',
+        number: '',
+        neighborhood: '',
+        city: '',
+        state: '',
+        cep: '',
+        builtArea: '',
+        mainQuota: '',
+        lateralQuota: '',
+        terrainConfig: 'regular',
+        iptuValue: '',
+        spuValue: '',
+        otherTaxes: '',
+        terrainMarkingUrl: null,
+        aerialViewUrl: null,
+        frontViewUrl: null,
+        sideViewUrl: null,
+        images: []
+      } as PropertyData);
+
+    } catch (error: any) {
+      console.error('Erro ao salvar imóvel:', error);
+      alert('Erro ao salvar imóvel: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredProperties = useMemo(() => {
+    const complexGroups = new Set();
+
+    // Extrai o identificador do complexo (ex: "Complexo Agamenon" → "complexo agamenon")
+    const extractComplexId = (name: string) => {
+      const normalized = name?.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "") || '';
+      const match = normalized.match(/complexo\s+(\w+)/i);
+      return match ? match[0] : null;
+    };
+
     return properties.filter(p => {
+      // Regra de unificação de complexos:
+      // Se for um complexo, mostrar apenas o primeiro registro encontrado com aquele identificador "Complexo X"
+      if (p.is_complex) {
+        const complexId = extractComplexId(p.name);
+        if (complexId) {
+          if (complexGroups.has(complexId)) return false;
+          complexGroups.add(complexId);
+        } else {
+          // Fallback para nome completo normalizado
+          const normalize = (str: string) => str?.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "") || '';
+          const nameKey = normalize(p.name);
+          if (complexGroups.has(nameKey)) return false;
+          complexGroups.add(nameKey);
+        }
+      }
+
+      // Ocultar unidades (filhos) se houver parent_id (caso o banco seja atualizado no futuro)
+      if (p.parent_id) return false;
+
       const search = searchTerm.toLowerCase();
       const matchesSearch = !searchTerm ||
         p.name?.toLowerCase().includes(search) ||
@@ -109,9 +249,12 @@ const App: React.FC = () => {
       const matchesFicha = !selectedFichaStatus ||
         (selectedFichaStatus === 'with' ? p.has_ficha : !p.has_ficha);
 
-      return matchesSearch && matchesCity && matchesState && matchesStatus && matchesFicha;
+      const matchesCategory = selectedCategory === 'all' ||
+        (selectedCategory === 'complex' ? p.is_complex : !p.is_complex);
+
+      return matchesSearch && matchesCity && matchesState && matchesStatus && matchesFicha && matchesCategory;
     });
-  }, [properties, searchTerm, selectedCity, selectedState, selectedStatus, selectedFichaStatus]);
+  }, [properties, searchTerm, selectedCity, selectedState, selectedStatus, selectedFichaStatus, selectedCategory]);
 
   const uniqueCities = useMemo(() => Array.from(new Set(properties.map(p => p.city).filter(Boolean))), [properties]);
   const uniqueStates = useMemo(() => Array.from(new Set(properties.map(p => p.state).filter(Boolean))), [properties]);
@@ -123,14 +266,25 @@ const App: React.FC = () => {
       setFormData({
         title: property.name || '',
         type: (property.property_type as PropertyType) || PropertyType.CASA,
-        price: property.market_value ? `R$ ${property.market_value.toLocaleString('pt-BR')}` : '',
-        area: property.built_area?.toString() || '',
-        bedrooms: '',
-        bathrooms: '',
-        description: '',
+        description: property.description || '',
+        isComplex: property.is_complex || false,
         address: property.address || '',
+        number: property.number || '',
+        neighborhood: property.neighborhood || '',
         city: property.city || '',
+        state: property.state || '',
         cep: property.zip_code || '',
+        builtArea: property.built_area?.toString() || '',
+        mainQuota: property.main_quota?.toString() || '',
+        lateralQuota: property.lateral_quota?.toString() || '',
+        terrainConfig: (property.terrain_config as 'regular' | 'irregular') || 'regular',
+        iptuValue: property.iptu_value?.toString() || '',
+        spuValue: property.spu_value?.toString() || '',
+        otherTaxes: property.other_taxes?.toString() || '',
+        terrainMarkingUrl: property.terrain_marking_url || null,
+        aerialViewUrl: property.aerial_view_url || null,
+        frontViewUrl: property.front_view_url || null,
+        sideViewUrl: property.side_view_url || null,
         images: []
       });
       setCurrentView('form');
@@ -199,17 +353,23 @@ const App: React.FC = () => {
     return <Auth onAuthSuccess={() => fetchProperties()} />;
   }
 
-  return (
-    <Layout user={session}>
-      {currentView === 'list' ? (
+  const renderContent = () => {
+    if (currentView === 'dashboard') {
+      return <Dashboard />;
+    }
+
+    if (currentView === 'properties') {
+      return (
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <PageHeader
-            title="Base de Imóveis"
-            subtitle={`Gerencie seus ${properties.length} imóveis cadastrados no FichaPRO.`}
-            actions={[
-              { label: 'Novo Imóvel', onClick: () => setCurrentView('form'), icon: <Plus className="w-4 h-4" />, variant: 'primary' }
-            ]}
-          />
+          <div className="mb-10">
+            <PageHeader
+              title="Base de Imóveis"
+              subtitle={`Gerencie seus ${filteredProperties.length} imóveis (unificados) cadastrados no FichaPRO.`}
+              actions={[
+                { label: 'Novo Imóvel', onClick: () => setCurrentView('form'), icon: <Plus className="w-4 h-4" />, variant: 'primary' }
+              ]}
+            />
+          </div>
 
           <PropertyFilters
             searchTerm={searchTerm} setSearchTerm={setSearchTerm}
@@ -217,6 +377,7 @@ const App: React.FC = () => {
             selectedState={selectedState} setSelectedState={setSelectedState}
             selectedStatus={selectedStatus} setSelectedStatus={setSelectedStatus}
             selectedFichaStatus={selectedFichaStatus} setSelectedFichaStatus={setSelectedFichaStatus}
+            selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory}
             viewMode={viewMode} setViewMode={setViewMode}
             cities={uniqueCities} states={uniqueStates}
           />
@@ -234,7 +395,10 @@ const App: React.FC = () => {
                   key={p.id}
                   property={p}
                   onGenerateFicha={handleGenerateFicha}
-                  onViewDetails={(id) => console.log('View details', id)}
+                  onViewDetails={(id) => {
+                    setSelectedDetailPropertyId(id);
+                    setCurrentView('details');
+                  }}
                 />
               ))}
             </div>
@@ -242,21 +406,52 @@ const App: React.FC = () => {
             <PropertyListView
               properties={filteredProperties}
               onGenerateFicha={handleGenerateFicha}
-              onViewDetails={(id) => console.log('View details', id)}
+              onViewDetails={(id) => {
+                setSelectedDetailPropertyId(id);
+                setCurrentView('details');
+              }}
             />
           )}
         </div>
-      ) : (
+      );
+    }
+
+    if (currentView === 'details') {
+      const property = properties.find(p => p.id === selectedDetailPropertyId);
+      if (!property) return null;
+      return (
+        <PropertyDetails
+          property={property}
+          allProperties={properties}
+          onBack={() => {
+            setCurrentView('properties');
+            setSelectedDetailPropertyId(null);
+          }}
+          onGenerateFicha={handleGenerateFicha}
+          user={session}
+        />
+      );
+    }
+
+    if (currentView === 'form') {
+      return (
         <div className="max-w-7xl mx-auto px-4 py-8">
           <PageHeader
-            title={selectedPropertyId ? "Atualizar Ficha" : "Gerar Nova Ficha"}
-            subtitle="Preencha os detalhes abaixo para gerar sua ficha profissional em PDF."
+            title={selectedPropertyId ? "Atualizar Imóvel" : "Incluir Novo Imóvel"}
+            subtitle="Preencha os detalhes abaixo para cadastrar o imóvel no sistema."
             breadcrumbs={[
-              { label: 'Imóveis', onClick: () => setCurrentView('list') },
-              { label: selectedPropertyId ? 'Atualizar Ficha' : 'Gerar Nova Ficha', active: true }
+              { label: 'Imóveis', onClick: () => setCurrentView('properties') },
+              { label: selectedPropertyId ? 'Atualizar Imóvel' : 'Incluir Novo Imóvel', active: true }
             ]}
             actions={[
-              { label: 'Voltar', onClick: () => setCurrentView('list'), icon: <ArrowLeft className="w-4 h-4" />, variant: 'secondary' }
+              { label: 'Voltar', onClick: () => setCurrentView('properties'), icon: <ArrowLeft className="w-4 h-4" />, variant: 'secondary' },
+              {
+                label: selectedPropertyId ? 'Atualizar Imóvel' : 'Salvar Imóvel',
+                onClick: handleSave,
+                icon: <Plus className="w-4 h-4" />,
+                variant: 'primary',
+                disabled: loading
+              }
             ]}
           />
 
@@ -269,6 +464,7 @@ const App: React.FC = () => {
                 </h2>
 
                 <div className="space-y-4">
+                  {/* Título do Imóvel */}
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Título do Imóvel</label>
                     <input
@@ -281,6 +477,7 @@ const App: React.FC = () => {
                     />
                   </div>
 
+                  {/* Tipo de Imóvel e Classificação */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Tipo de Imóvel</label>
@@ -288,6 +485,7 @@ const App: React.FC = () => {
                         name="type"
                         value={formData.type}
                         onChange={handleInputChange}
+                        title="Selecione o tipo de imóvel"
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 bg-white"
                       >
                         {Object.values(PropertyType).map(type => (
@@ -296,14 +494,92 @@ const App: React.FC = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Preço</label>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Classificação</label>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className={`flex-1 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${!formData.isComplex
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                            }`}
+                          onClick={() => setFormData(prev => ({ ...prev, isComplex: false }))}
+                        >
+                          Único
+                        </button>
+                        <button
+                          type="button"
+                          className={`flex-1 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${formData.isComplex
+                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                            }`}
+                          onClick={() => setFormData(prev => ({ ...prev, isComplex: true }))}
+                        >
+                          Complexo
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Endereço e Número */}
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div className="sm:col-span-3">
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Endereço</label>
                       <input
                         type="text"
-                        name="price"
-                        value={formData.price}
+                        name="address"
+                        value={formData.address || ''}
                         onChange={handleInputChange}
-                        placeholder="R$ 0,00"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                        placeholder="Rua, Avenida, etc."
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Número</label>
+                      <input
+                        type="text"
+                        name="number"
+                        value={formData.number || ''}
+                        onChange={handleInputChange}
+                        placeholder="123"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bairro, Cidade, UF */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Bairro</label>
+                      <input
+                        type="text"
+                        name="neighborhood"
+                        value={formData.neighborhood || ''}
+                        onChange={handleInputChange}
+                        placeholder="Centro"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Cidade</label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={formData.city || ''}
+                        onChange={handleInputChange}
+                        placeholder="São Paulo"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">UF</label>
+                      <input
+                        type="text"
+                        name="state"
+                        value={formData.state || ''}
+                        onChange={handleInputChange}
+                        placeholder="SP"
+                        maxLength={2}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400 uppercase"
                       />
                     </div>
                   </div>
@@ -313,44 +589,8 @@ const App: React.FC = () => {
               <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
                   <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">2</div>
-                  Detalhes do Imóvel
+                  Apresentação do Imóvel
                 </h2>
-
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Área (m²)</label>
-                    <input
-                      type="text"
-                      name="area"
-                      value={formData.area}
-                      onChange={handleInputChange}
-                      placeholder="250"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Quartos</label>
-                    <input
-                      type="text"
-                      name="bedrooms"
-                      value={formData.bedrooms}
-                      onChange={handleInputChange}
-                      placeholder="4"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Banheiros</label>
-                    <input
-                      type="text"
-                      name="bathrooms"
-                      value={formData.bathrooms}
-                      onChange={handleInputChange}
-                      placeholder="3"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
-                    />
-                  </div>
-                </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -374,21 +614,264 @@ const App: React.FC = () => {
                   />
                 </div>
               </section>
+
+              {/* Seção 3: Parâmetros Construtivos */}
+              <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">3</div>
+                  Parâmetros Construtivos
+                </h2>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Área do Terreno (m²)</label>
+                    <input
+                      type="text"
+                      name="landArea"
+                      placeholder="0"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Área Construída (m²)</label>
+                    <input
+                      type="text"
+                      name="builtArea"
+                      placeholder="0"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Cota Principal (m²)</label>
+                    <input
+                      type="text"
+                      name="mainQuota"
+                      placeholder="0"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Cota Lateral (m²)</label>
+                    <input
+                      type="text"
+                      name="lateralQuota"
+                      placeholder="0"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Configuração do Terreno</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="terrainConfig" value="regular" defaultChecked className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm text-slate-700">Regular</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="terrainConfig" value="irregular" className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm text-slate-700">Irregular</span>
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              {/* Seção 4: Impostos */}
+              <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">4</div>
+                  Impostos
+                </h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Valor do IPTU (R$)</label>
+                    <input
+                      type="text"
+                      name="iptuValue"
+                      placeholder="R$ 0,00"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">SPU (R$)</label>
+                    <input
+                      type="text"
+                      name="spuValue"
+                      placeholder="R$ 0,00"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Outros Impostos (R$)</label>
+                    <input
+                      type="text"
+                      name="otherTaxes"
+                      placeholder="R$ 0,00"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                    />
+                  </div>
+                </div>
+              </section>
             </div>
 
+            {/* Sidebar com Upload de Imagens */}
             <Sidebar>
-              <PhotoGallery
-                images={formData.images}
-                onAddImages={handleAddFiles}
-                onAddImageUrl={handleAddImageUrl}
-                onDeleteImage={handleDeleteImage}
-                onSetCover={handleSetCover}
-              />
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-blue-600">photo_library</span>
+                  Imagens do Imóvel
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Arraste ou clique para fazer upload das imagens. Elas serão usadas na ficha técnica.
+                </p>
+
+                {/* Upload Cards */}
+                <div className="space-y-3">
+                  <ImageUploadCard
+                    title="Marcação do Terreno"
+                    description="Imagem aérea com demarcação"
+                    icon="🗺️"
+                    initialValue={formData.terrainMarkingUrl}
+                    onChange={(url) => setFormData(prev => ({ ...prev, terrainMarkingUrl: url }))}
+                  />
+                  <ImageUploadCard
+                    title="Visão Aérea"
+                    description="Visão aérea da região"
+                    icon="🛰️"
+                    initialValue={formData.aerialViewUrl}
+                    onChange={(url) => setFormData(prev => ({ ...prev, aerialViewUrl: url }))}
+                  />
+                  <ImageUploadCard
+                    title="Vista Frontal"
+                    description="Foto frontal do imóvel"
+                    icon="🏠"
+                    initialValue={formData.frontViewUrl}
+                    onChange={(url) => setFormData(prev => ({ ...prev, frontViewUrl: url }))}
+                  />
+                  <ImageUploadCard
+                    title="Vista Lateral"
+                    description="Foto lateral do imóvel"
+                    icon="📐"
+                    initialValue={formData.sideViewUrl}
+                    onChange={(url) => setFormData(prev => ({ ...prev, sideViewUrl: url }))}
+                  />
+                </div>
+              </div>
             </Sidebar>
           </div>
         </div>
-      )}
+      );
+    }
+    return null;
+  };
+
+  return (
+    <Layout
+      user={session}
+      currentView={currentView}
+      onViewChange={(view: any) => setCurrentView(view)}
+    >
+      {renderContent()}
     </Layout>
+  );
+};
+
+// Componente de Upload de Imagem com Drag & Drop
+const ImageUploadCard = ({ title, description, icon, initialValue, onChange }: {
+  title: string;
+  description: string;
+  icon: string;
+  initialValue?: string | null;
+  onChange: (url: string | null) => void;
+}) => {
+  const [imageUrl, setImageUrl] = React.useState<string | null>(initialValue || null);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    setImageUrl(initialValue || null);
+  }, [initialValue]);
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFile(files[0]);
+    }
+  };
+
+  const handleFile = (file: File) => {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setImageUrl(result);
+        onChange(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleClick = () => {
+    inputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleFile(files[0]);
+    }
+  };
+
+  const handleRemove = () => {
+    setImageUrl(null);
+    onChange(null);
+    if (inputRef.current) inputRef.current.value = '';
+  };
+
+  return (
+    <div
+      className={`border-2 border-dashed rounded-xl p-3 transition-all cursor-pointer ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-400'
+        }`}
+      onDrop={handleDrop}
+      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      onDragLeave={() => setIsDragging(false)}
+      onClick={handleClick}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {imageUrl ? (
+        <div className="relative">
+          <img src={imageUrl} alt={title} className="w-full h-20 object-cover rounded-lg" />
+          <button
+            onClick={(e) => { e.stopPropagation(); handleRemove(); }}
+            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600"
+          >
+            ✕
+          </button>
+          <div className="mt-2 text-xs font-bold text-green-600 flex items-center gap-1">
+            ✓ {title}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{icon}</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-slate-700 truncate">{title}</p>
+            <p className="text-xs text-slate-400 truncate">{description}</p>
+          </div>
+          <span className="text-slate-300 text-lg">+</span>
+        </div>
+      )}
+    </div>
   );
 };
 
