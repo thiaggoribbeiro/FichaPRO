@@ -66,9 +66,11 @@ const App: React.FC = () => {
     city: '',
     state: '',
     cep: '',
+    landArea: '',
     builtArea: '',
     mainQuota: '',
     lateralQuota: '',
+    floors: '',
     terrainConfig: 'regular',
     iptuValue: '',
     spuValue: '',
@@ -77,6 +79,8 @@ const App: React.FC = () => {
     aerialViewUrl: null,
     frontViewUrl: null,
     sideViewUrl: null,
+    matricula: '',
+    sequencial: '',
     images: []
   });
 
@@ -131,9 +135,11 @@ const App: React.FC = () => {
         description: formData.description,
 
         // Parâmetros Construtivos
+        land_area: parseFloat(formData.landArea || '0'),
         built_area: parseFloat(formData.builtArea || '0'),
         main_quota: parseFloat(formData.mainQuota || '0'),
         lateral_quota: parseFloat(formData.lateralQuota || '0'),
+        floors: parseInt(formData.floors || '0'),
         terrain_config: formData.terrainConfig,
 
         // Impostos
@@ -146,6 +152,10 @@ const App: React.FC = () => {
         aerial_view_url: formData.aerialViewUrl,
         front_view_url: formData.frontViewUrl,
         side_view_url: formData.sideViewUrl,
+
+        // Registros
+        matricula: formData.matricula,
+        sequencial: formData.sequencial,
 
         // Defaults e outros campos
         status: PropertyStatus.DISPONIVEL,
@@ -184,9 +194,11 @@ const App: React.FC = () => {
         city: '',
         state: '',
         cep: '',
+        landArea: '',
         builtArea: '',
         mainQuota: '',
         lateralQuota: '',
+        floors: '',
         terrainConfig: 'regular',
         iptuValue: '',
         spuValue: '',
@@ -195,6 +207,8 @@ const App: React.FC = () => {
         aerialViewUrl: null,
         frontViewUrl: null,
         sideViewUrl: null,
+        matricula: '',
+        sequencial: '',
         images: []
       } as PropertyData);
 
@@ -274,9 +288,11 @@ const App: React.FC = () => {
         city: property.city || '',
         state: property.state || '',
         cep: property.zip_code || '',
+        landArea: property.land_area?.toString() || '',
         builtArea: property.built_area?.toString() || '',
         mainQuota: property.main_quota?.toString() || '',
         lateralQuota: property.lateral_quota?.toString() || '',
+        floors: property.floors?.toString() || '',
         terrainConfig: (property.terrain_config as 'regular' | 'irregular') || 'regular',
         iptuValue: property.iptu_value?.toString() || '',
         spuValue: property.spu_value?.toString() || '',
@@ -285,6 +301,8 @@ const App: React.FC = () => {
         aerialViewUrl: property.aerial_view_url || null,
         frontViewUrl: property.front_view_url || null,
         sideViewUrl: property.side_view_url || null,
+        matricula: property.matricula || '',
+        sequencial: property.sequencial || '',
         images: []
       });
       setCurrentView('form');
@@ -342,7 +360,7 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-[#137fec] border-t-transparent rounded-full animate-spin"></div>
           <p className="text-slate-500 font-medium">Carregando...</p>
         </div>
       </div>
@@ -364,7 +382,7 @@ const App: React.FC = () => {
           <div className="mb-10">
             <PageHeader
               title="Base de Imóveis"
-              subtitle={`Gerencie seus ${filteredProperties.length} imóveis (unificados) cadastrados no FichaPRO.`}
+              subtitle={`Gerencie seus ${filteredProperties.length} imóveis (unificados) cadastrados no ImobLead.`}
               actions={[
                 { label: 'Novo Imóvel', onClick: () => setCurrentView('form'), icon: <Plus className="w-4 h-4" />, variant: 'primary' }
               ]}
@@ -459,7 +477,7 @@ const App: React.FC = () => {
             <div className="lg:col-span-2 space-y-6">
               <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">1</div>
+                  <div className="w-8 h-8 bg-blue-50 text-[#137fec] rounded-lg flex items-center justify-center font-bold text-sm">1</div>
                   Informações Básicas
                 </h2>
 
@@ -473,7 +491,7 @@ const App: React.FC = () => {
                       value={formData.title}
                       onChange={handleInputChange}
                       placeholder="Ex: Mansão Moderna com Piscina Infinita"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400"
                     />
                   </div>
 
@@ -486,7 +504,7 @@ const App: React.FC = () => {
                         value={formData.type}
                         onChange={handleInputChange}
                         title="Selecione o tipo de imóvel"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 bg-white"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 bg-white"
                       >
                         {Object.values(PropertyType).map(type => (
                           <option key={type} value={type}>{type}</option>
@@ -499,7 +517,7 @@ const App: React.FC = () => {
                         <button
                           type="button"
                           className={`flex-1 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${!formData.isComplex
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            ? 'border-[#137fec] bg-blue-50 text-blue-700'
                             : 'border-slate-200 text-slate-500 hover:border-slate-300'
                             }`}
                           onClick={() => setFormData(prev => ({ ...prev, isComplex: false }))}
@@ -509,7 +527,7 @@ const App: React.FC = () => {
                         <button
                           type="button"
                           className={`flex-1 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${formData.isComplex
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
+                            ? 'border-[#137fec] bg-blue-50 text-blue-700'
                             : 'border-slate-200 text-slate-500 hover:border-slate-300'
                             }`}
                           onClick={() => setFormData(prev => ({ ...prev, isComplex: true }))}
@@ -530,7 +548,7 @@ const App: React.FC = () => {
                         value={formData.address || ''}
                         onChange={handleInputChange}
                         placeholder="Rua, Avenida, etc."
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400"
                       />
                     </div>
                     <div>
@@ -541,7 +559,7 @@ const App: React.FC = () => {
                         value={formData.number || ''}
                         onChange={handleInputChange}
                         placeholder="123"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400"
                       />
                     </div>
                   </div>
@@ -556,7 +574,7 @@ const App: React.FC = () => {
                         value={formData.neighborhood || ''}
                         onChange={handleInputChange}
                         placeholder="Centro"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400"
                       />
                     </div>
                     <div>
@@ -567,7 +585,7 @@ const App: React.FC = () => {
                         value={formData.city || ''}
                         onChange={handleInputChange}
                         placeholder="São Paulo"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400"
                       />
                     </div>
                     <div>
@@ -579,7 +597,7 @@ const App: React.FC = () => {
                         onChange={handleInputChange}
                         placeholder="SP"
                         maxLength={2}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 placeholder:text-slate-400 uppercase"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 placeholder:text-slate-400 uppercase"
                       />
                     </div>
                   </div>
@@ -588,7 +606,7 @@ const App: React.FC = () => {
 
               <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">2</div>
+                  <div className="w-8 h-8 bg-blue-50 text-[#137fec] rounded-lg flex items-center justify-center font-bold text-sm">2</div>
                   Apresentação do Imóvel
                 </h2>
 
@@ -598,9 +616,9 @@ const App: React.FC = () => {
                     <button
                       onClick={handleGenerateAiDescription}
                       disabled={loadingAi}
-                      className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors bg-blue-50 px-2 py-1.5 rounded-lg disabled:opacity-50"
+                      className="flex items-center gap-1.5 text-xs font-bold text-[#137fec] hover:text-blue-700 transition-colors bg-blue-50 px-2 py-1.5 rounded-lg disabled:opacity-50"
                     >
-                      <span className="w-3.5 h-3.5 flex items-center justify-center text-[10px] bg-blue-600 text-white rounded-full">✨</span>
+                      <span className="w-3.5 h-3.5 flex items-center justify-center text-[10px] bg-[#137fec] text-white rounded-full">✨</span>
                       {loadingAi ? 'Gerando...' : 'Gerar com IA'}
                     </button>
                   </div>
@@ -610,15 +628,49 @@ const App: React.FC = () => {
                     value={formData.description}
                     onChange={handleInputChange}
                     placeholder="Destaque as principais características, comodidades e pontos de venda..."
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 resize-none"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700 resize-none"
                   />
                 </div>
               </section>
 
-              {/* Seção 3: Parâmetros Construtivos */}
+              {/* Seção 2.5: Registros */}
+
+
               <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">3</div>
+                  <div className="w-8 h-8 bg-blue-50 text-[#137fec] rounded-lg flex items-center justify-center font-bold text-sm">3</div>
+                  Registros
+                </h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Matrículas</label>
+                    <input
+                      type="text"
+                      name="matricula"
+                      value={formData.matricula}
+                      onChange={handleInputChange}
+                      placeholder="Ex: 123.456, 789.012"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Sequenciais</label>
+                    <input
+                      type="text"
+                      name="sequencial"
+                      value={formData.sequencial}
+                      onChange={handleInputChange}
+                      placeholder="Ex: 1.234.567-8"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-50 text-[#137fec] rounded-lg flex items-center justify-center font-bold text-sm">4</div>
                   Parâmetros Construtivos
                 </h2>
 
@@ -628,8 +680,10 @@ const App: React.FC = () => {
                     <input
                       type="text"
                       name="landArea"
+                      value={formData.landArea || ''}
+                      onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
                     />
                   </div>
                   <div>
@@ -637,26 +691,43 @@ const App: React.FC = () => {
                     <input
                       type="text"
                       name="builtArea"
+                      value={formData.builtArea || ''}
+                      onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Cota Principal (m²)</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Testada Principal (m)</label>
                     <input
                       type="text"
                       name="mainQuota"
+                      value={formData.mainQuota || ''}
+                      onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Cota Lateral (m²)</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Cota Lateral (m)</label>
                     <input
                       type="text"
                       name="lateralQuota"
+                      value={formData.lateralQuota || ''}
+                      onChange={handleInputChange}
                       placeholder="0"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Qtd. de Pavimentos</label>
+                    <input
+                      type="text"
+                      name="floors"
+                      value={formData.floors || ''}
+                      onChange={handleInputChange}
+                      placeholder="0"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
                     />
                   </div>
                 </div>
@@ -665,11 +736,25 @@ const App: React.FC = () => {
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Configuração do Terreno</label>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="terrainConfig" value="regular" defaultChecked className="w-4 h-4 text-blue-600" />
+                      <input
+                        type="radio"
+                        name="terrainConfig"
+                        value="regular"
+                        checked={formData.terrainConfig === 'regular'}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-[#137fec]"
+                      />
                       <span className="text-sm text-slate-700">Regular</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="terrainConfig" value="irregular" className="w-4 h-4 text-blue-600" />
+                      <input
+                        type="radio"
+                        name="terrainConfig"
+                        value="irregular"
+                        checked={formData.terrainConfig === 'irregular'}
+                        onChange={handleInputChange}
+                        className="w-4 h-4 text-[#137fec]"
+                      />
                       <span className="text-sm text-slate-700">Irregular</span>
                     </label>
                   </div>
@@ -679,7 +764,7 @@ const App: React.FC = () => {
               {/* Seção 4: Impostos */}
               <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">4</div>
+                  <div className="w-8 h-8 bg-blue-50 text-[#137fec] rounded-lg flex items-center justify-center font-bold text-sm">5</div>
                   Impostos
                 </h2>
 
@@ -689,8 +774,10 @@ const App: React.FC = () => {
                     <input
                       type="text"
                       name="iptuValue"
+                      value={formData.iptuValue || ''}
+                      onChange={handleInputChange}
                       placeholder="R$ 0,00"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
                     />
                   </div>
                   <div>
@@ -698,8 +785,10 @@ const App: React.FC = () => {
                     <input
                       type="text"
                       name="spuValue"
+                      value={formData.spuValue || ''}
+                      onChange={handleInputChange}
                       placeholder="R$ 0,00"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
                     />
                   </div>
                   <div>
@@ -707,8 +796,10 @@ const App: React.FC = () => {
                     <input
                       type="text"
                       name="otherTaxes"
+                      value={formData.otherTaxes || ''}
+                      onChange={handleInputChange}
                       placeholder="R$ 0,00"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#137fec]/20 focus:border-[#137fec] transition-all text-slate-700"
                     />
                   </div>
                 </div>
@@ -719,7 +810,7 @@ const App: React.FC = () => {
             <Sidebar>
               <div className="space-y-4">
                 <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-blue-600">photo_library</span>
+                  <span className="material-symbols-outlined text-[#137fec]">photo_library</span>
                   Imagens do Imóvel
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -833,7 +924,7 @@ const ImageUploadCard = ({ title, description, icon, initialValue, onChange }: {
 
   return (
     <div
-      className={`border-2 border-dashed rounded-xl p-3 transition-all cursor-pointer ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-blue-400'
+      className={`border-2 border-dashed rounded-xl p-3 transition-all cursor-pointer ${isDragging ? 'border-[#137fec] bg-slate-50' : 'border-slate-200 hover:border-[#137fec]'
         }`}
       onDrop={handleDrop}
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}

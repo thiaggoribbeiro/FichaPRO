@@ -105,6 +105,14 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
             min_rent: units.reduce((acc, u) => acc + toNum(u.min_rent), 0),
             variable_rent: units.reduce((acc, u) => acc + toNum(u.variable_rent), 0),
             purchase_value: units.reduce((acc, u) => acc + toNum(u.purchase_value), 0),
+            main_quota: units.reduce((acc, u) => acc + toNum(u.main_quota), 0),
+            lateral_quota: units.reduce((acc, u) => acc + toNum(u.lateral_quota), 0),
+            floors: units.reduce((acc, u) => acc + toNum(u.floors), 0),
+            iptu_value: units.reduce((acc, u) => acc + toNum(u.iptu_value), 0),
+            spu_value: units.reduce((acc, u) => acc + toNum(u.spu_value), 0),
+            other_taxes: units.reduce((acc, u) => acc + toNum(u.other_taxes), 0),
+            matricula: units.map(u => u.matricula).filter(Boolean).join(', '),
+            sequencial: units.map(u => u.sequencial).filter(Boolean).join(', '),
         };
 
         const rent_dy = sums.market_value > 0 ? (sums.market_rent * 12 / sums.market_value) * 100 : 0;
@@ -122,6 +130,14 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
     const displayPurchaseValue = isComplex ? aggregatedData?.purchase_value : property.purchase_value;
     const displayRentDy = isComplex ? aggregatedData?.rent_dy : property.rent_dy;
     const displayRentSqm = isComplex ? aggregatedData?.rent_sqm : property.rent_sqm;
+    const displayMainQuota = isComplex ? aggregatedData?.main_quota : property.main_quota;
+    const displayLateralQuota = isComplex ? aggregatedData?.lateral_quota : property.lateral_quota;
+    const displayIptuValue = isComplex ? aggregatedData?.iptu_value : property.iptu_value;
+    const displaySpuValue = isComplex ? aggregatedData?.spu_value : property.spu_value;
+    const displayOtherTaxes = isComplex ? aggregatedData?.other_taxes : property.other_taxes;
+    const displayFloors = isComplex ? aggregatedData?.floors : property.floors;
+    const displayMatricula = isComplex ? aggregatedData?.matricula : property.matricula;
+    const displaySequencial = isComplex ? aggregatedData?.sequencial : property.sequencial;
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
     };
@@ -216,7 +232,6 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                             <InfoItem label="Categoria Inquilino" value={property.tenant_category || 'N/A'} icon={<Briefcase className="w-4 h-4" />} />
                             <InfoItem label="Proprietário" value={property.owner} icon={<Building2 className="w-4 h-4" />} />
                             <InfoItem label="Ano de Compra" value={property.purchase_year?.toString() || 'N/A'} icon={<Calendar className="w-4 h-4" />} />
-                            <InfoItem label="Matrícula" value={property.registration} icon={<FileText className="w-4 h-4" />} />
                         </div>
 
                         {isComplex && units.length > 0 && (
@@ -259,19 +274,16 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                             <InfoItem label="CEP" value={property.zip_code} />
                         </div>
                     </section>
-                </div>
 
-                <div className="space-y-6">
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                         <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                             <DollarSign className="w-5 h-5 text-blue-600" />
                             Dados Financeiros
                         </h2>
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
                             <FinancialItem label="Aluguel Mínimo" value={formatCurrency(displayMinRent || 0)} />
                             <FinancialItem label="Aluguel Variável" value={formatCurrency(displayVariableRent || 0)} />
                             <FinancialItem label="Valor de Compra" value={formatCurrency(displayPurchaseValue || 0)} />
-                            <hr className="border-slate-100" />
                             <FinancialItem label="Rent. DY" value={`${(displayRentDy || 0).toFixed(2)}%`} />
                             <FinancialItem label="Aluguel/m²" value={formatCurrency(displayRentSqm || 0)} />
                         </div>
@@ -283,13 +295,25 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                             <Ruler className="w-5 h-5 text-blue-600" />
                             Parâmetros Construtivos
                         </h2>
-                        <div className="space-y-4">
-                            <FinancialItem label="Área do Terreno" value={`${property.land_area || 0} m²`} />
-                            <FinancialItem label="Área Construída" value={`${property.built_area || 0} m²`} />
-                            <FinancialItem label="Cota Principal" value={`${property.main_quota || 0} m²`} />
-                            <FinancialItem label="Cota Lateral" value={`${property.lateral_quota || 0} m²`} />
-                            <hr className="border-slate-100" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
+                            <FinancialItem label="Área do Terreno" value={`${displayLandArea || 0} m²`} />
+                            <FinancialItem label="Área Construída" value={`${displayBuiltArea || 0} m²`} />
+                            <FinancialItem label="Testada Principal" value={`${displayMainQuota || 0} m`} />
+                            <FinancialItem label="Cota Lateral" value={`${displayLateralQuota || 0} m`} />
+                            <FinancialItem label="Qtd. de Pavimentos" value={(displayFloors || 0).toString()} />
                             <FinancialItem label="Configuração do Terreno" value={property.terrain_config === 'irregular' ? 'Irregular' : 'Regular'} />
+                        </div>
+                    </section>
+
+                    {/* Registros */}
+                    <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                            <FileText className="w-5 h-5 text-blue-600" />
+                            Registros
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
+                            <FinancialItem label="Matrículas" value={displayMatricula || 'N/A'} />
+                            <FinancialItem label="Sequenciais" value={displaySequencial || 'N/A'} />
                         </div>
                     </section>
 
@@ -299,13 +323,15 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                             <FileText className="w-5 h-5 text-blue-600" />
                             Impostos
                         </h2>
-                        <div className="space-y-4">
-                            <FinancialItem label="IPTU" value={formatCurrency(property.iptu_value || 0)} />
-                            <FinancialItem label="SPU" value={formatCurrency(property.spu_value || 0)} />
-                            <FinancialItem label="Outros Impostos" value={formatCurrency(property.other_taxes || 0)} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
+                            <FinancialItem label="IPTU" value={formatCurrency(displayIptuValue || 0)} />
+                            <FinancialItem label="SPU" value={formatCurrency(displaySpuValue || 0)} />
+                            <FinancialItem label="Outros Impostos" value={formatCurrency(displayOtherTaxes || 0)} />
                         </div>
                     </section>
+                </div>
 
+                <div className="space-y-6">
                     {/* Galeria de Fotos Lateral */}
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
                         <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">

@@ -55,11 +55,11 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                     <div className="p-8">
                         {/* Logo Section */}
                         <div className="text-center mb-10">
-                            <div className="inline-flex items-center justify-center w-20 h-20 bg-[#137fec] rounded-2xl shadow-lg shadow-[#137fec]/20 mb-4 animate-bounce-slow">
-                                <span className="material-symbols-outlined text-5xl text-white">real_estate_agent</span>
+                            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-lg shadow-slate-200/50 mb-4 animate-bounce-slow overflow-hidden">
+                                <img src="/logo.png" alt="ImobLead Logo" className="w-16 h-16 object-contain" />
                             </div>
-                            <h1 className="text-4xl font-black tracking-tight text-slate-900">
-                                Ficha<span className="text-[#137fec]">PRO</span>
+                            <h1 className="text-4xl tracking-tight text-slate-900">
+                                <span className="font-light">Imob</span><span className="font-semibold">Lead</span>
                             </h1>
                             <p className="text-slate-500 mt-2 font-medium">Sua plataforma profissional de fichas imobiliárias</p>
                             <p className="text-slate-400 text-xs mt-1 font-medium">v1.2.0</p>

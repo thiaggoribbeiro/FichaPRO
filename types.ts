@@ -39,6 +39,8 @@ export interface Property {
   built_area: number;
   land_area: number;
   purchase_year: number | null;
+  matricula: string;
+  sequencial: string;
   min_rent: number;
   variable_rent: number;
   purchase_value: number;
@@ -52,8 +54,9 @@ export interface Property {
   created_at?: string;
 
   // Parâmetros Construtivos
-  main_quota: number;           // Cota Principal (m²)
-  lateral_quota: number;        // Cota Lateral (m²)
+  main_quota: number;           // Testada Principal (m)
+  lateral_quota: number;        // Cota Lateral (m)
+  floors: number;               // Quantidade de Pavimentos
   terrain_config: 'regular' | 'irregular';  // Configuração do Terreno
 
   // Impostos
@@ -88,9 +91,11 @@ export interface PropertyData {
   cep: string;
 
   // Parâmetros Construtivos
+  landArea: string;
   builtArea: string;
   mainQuota: string;
   lateralQuota: string;
+  floors: string;
   terrainConfig: 'regular' | 'irregular';
 
   // Impostos
@@ -103,6 +108,7 @@ export interface PropertyData {
   aerialViewUrl: string | null;
   frontViewUrl: string | null;
   sideViewUrl: string | null;
-
+  matricula: string;
+  sequencial: string;
   images: PropertyImage[];
 }

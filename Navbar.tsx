@@ -34,11 +34,13 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#137fec] rounded-lg flex items-center justify-center text-white">
-              <span className="material-symbols-outlined text-xl">real_estate_agent</span>
+            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center overflow-hidden">
+              <img src="/logo.png" alt="Logo" className="w-6 h-6 object-contain" />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-xl font-extrabold tracking-tight leading-tight">Ficha<span className="text-[#137fec]">PRO</span></h1>
+              <h1 className="text-xl tracking-tight leading-tight">
+                <span className="font-light">Imob</span><span className="font-semibold">Lead</span>
+              </h1>
               <span className="text-[10px] text-slate-400 font-medium">v1.2.0</span>
             </div>
           </div>
@@ -180,7 +182,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
                   <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-[#137fec]/10 group-hover:text-[#137fec] transition-all">
                     <span className="material-symbols-outlined text-lg">business</span>
                   </div>
-                  <span className="text-xs font-semibold">FichaPRO Gestão</span>
+                  <span className="text-xs font-semibold">ImobLead Gestão</span>
                 </div>
               </div>
 
