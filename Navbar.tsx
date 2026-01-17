@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from './lib/supabase';
 import { User } from '@supabase/supabase-js';
 
 interface NavbarProps {
   user?: User | null;
   currentView: string;
-  onViewChange: (view: 'dashboard' | 'properties' | 'models' | 'settings') => void;
+  onViewChange: (view: 'dashboard' | 'properties' | 'models' | 'settings' | 'negotiation') => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
@@ -41,7 +41,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
               <h1 className="text-xl tracking-tight leading-tight">
                 <span className="font-light">Imob</span><span className="font-semibold">Lead</span>
               </h1>
-              <span className="text-[10px] text-slate-400 font-medium">v1.2.6</span>
+              <span className="text-[10px] text-slate-400 font-medium">v1.2.7</span>
             </div>
           </div>
 
@@ -57,6 +57,12 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
               className={`text-sm font-semibold transition-colors ${currentView === 'properties' ? 'text-[#A64614]' : 'text-slate-600 hover:text-[#A64614]'}`}
             >
               Imóveis
+            </button>
+            <button
+              onClick={() => onViewChange('negotiation')}
+              className={`text-sm font-semibold transition-colors ${currentView === 'negotiation' ? 'text-[#A64614]' : 'text-slate-600 hover:text-[#A64614]'}`}
+            >
+              Negociação
             </button>
             <button
               onClick={() => onViewChange('models')}
@@ -150,7 +156,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
             {/* Conteúdo do Perfil */}
             <div className="pt-14 pb-8 px-8 space-y-8">
               <div className="text-center">
-                <h4 className="text-2xl font-black text-slate-900 leading-tight">{profile.full_name}</h4>
+                <h4 className="text-2xl font-bold text-slate-900 leading-tight">{profile.full_name}</h4>
                 <p className="text-[10px] font-bold text-[#A64614] uppercase tracking-[0.2em] mt-1">
                   {profile?.role === 'admin' ? 'Administrador' :
                     profile?.role === 'manager' ? 'Gestor' : 'Usuário'}
@@ -159,14 +165,14 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col gap-1">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Status</span>
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Status</span>
                   <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     ATIVO
                   </span>
                 </div>
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col gap-1">
-                  <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Acesso</span>
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Acesso</span>
                   <span className="text-xs font-bold text-slate-700 truncate capitalize">{profile?.role || 'Usuário'}</span>
                 </div>
               </div>
@@ -188,7 +194,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
 
               <button
                 onClick={() => setShowProfileModal(false)}
-                className="w-full py-4 bg-[#A64614] hover:bg-[#8A3A10] text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-orange-900/20 active:scale-[0.98]"
+                className="w-full py-4 bg-[#A64614] hover:bg-[#8A3A10] text-white rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-orange-900/20 active:scale-[0.98]"
               >
                 Fechar Perfil
               </button>

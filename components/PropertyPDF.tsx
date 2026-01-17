@@ -1,265 +1,240 @@
 import React from 'react';
-import { Document, Page, Text, View, Image, StyleSheet, Font, Link } from '@react-pdf/renderer';
+import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import { Property } from '../types';
 
-// Registrar fonte (opcional - usar fonte do sistema por padrão)
-// Font.register({ family: 'Inter', src: '/fonts/Inter-Regular.ttf' });
-
-// Estilos baseados no modelo Plus Imóveis
+// Styles optimized for single-page A4 PDF and clean banner text
 const styles = StyleSheet.create({
-    // === CORES DO TEMA ===
     page: {
-        backgroundColor: '#ffffff',
+        backgroundColor: '#0d141b',
         fontFamily: 'Helvetica',
+        padding: 0,
     },
-
-    // === PÁGINA 1: CAPA ===
-    coverPage: {
+    container: {
+        width: '100%',
+    },
+    // Banner principal
+    bannerContainer: {
         position: 'relative',
         width: '100%',
-        height: '100%',
+        height: 180,
     },
-    coverBackground: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
+    bannerImage: {
         width: '100%',
         height: '100%',
         objectFit: 'cover',
     },
-    coverOverlay: {
+    bannerOverlay: {
         position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
         bottom: 0,
-        left: 0,
-        width: '100%',
-        height: '60%',
-        backgroundColor: '#1a2e44',
-        opacity: 0.95,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        padding: 25,
+        justifyContent: 'center',
     },
-    coverContent: {
-        position: 'absolute',
-        bottom: 120,
-        left: 0,
-        width: '100%',
-        textAlign: 'center',
+    badge: {
+        backgroundColor: '#A64614',
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 2,
+        marginBottom: 8,
+        alignSelf: 'flex-start',
     },
-    coverBrand: {
-        fontSize: 14,
-        color: '#6b8cae',
-        marginBottom: 16,
-        letterSpacing: 2,
+    badgeText: {
+        color: '#ffffff',
+        fontSize: 7,
+        fontWeight: 'extrabold',
+        textTransform: 'uppercase',
     },
-    coverTitle: {
-        fontSize: 36,
+    propertyTitle: {
+        color: '#ffffff',
+        fontSize: 22,
         fontFamily: 'Helvetica-Bold',
-        color: '#ffffff',
-        marginBottom: 12,
     },
-    coverSubtitle: {
-        fontSize: 24,
-        color: '#ffffff',
-        opacity: 0.9,
+    propertyAddress: {
+        color: 'rgba(255, 255, 255, 0.9)',
+        fontSize: 11,
+        fontFamily: 'Helvetica',
+        marginTop: 4,
     },
-    coverFooter: {
-        position: 'absolute',
-        bottom: 30,
-        left: 30,
+    // Seções
+    section: {
+        paddingHorizontal: 25,
+        marginTop: 12,
+    },
+    sectionTitleContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    sectionIndicator: {
+        width: 3,
+        height: 14,
+        backgroundColor: '#A64614',
+        borderRadius: 2,
+        marginRight: 8,
+    },
+    sectionTitle: {
+        color: '#ffffff',
+        fontSize: 12,
+        fontFamily: 'Helvetica-Bold',
+    },
+    // Grid de Detalhes
+    detailsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    detailCard: {
+        width: '48.5%',
+        backgroundColor: 'rgba(30, 41, 59, 0.4)',
+        padding: 8,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#334155',
+        marginBottom: 4,
+    },
+    detailHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 5,
+    },
+    detailLabel: {
+        color: '#94a3b8',
+        fontSize: 7,
+        fontFamily: 'Helvetica-Bold',
+        textTransform: 'uppercase',
+    },
+    detailValue: {
+        color: '#ffffff',
         fontSize: 10,
-        color: '#6b8cae',
+        fontFamily: 'Helvetica-Bold',
     },
-
-    // === PÁGINA 2: APRESENTAÇÃO ===
-    pageWithHeader: {
-        padding: 30,
+    // Galeria
+    galleryGrid: {
+        flexDirection: 'row',
+        gap: 10,
+        height: 125,
     },
-    header: {
+    mainImage: {
+        width: '66%',
+        height: '100%',
+        borderRadius: 12,
+        objectFit: 'cover',
+    },
+    subImagesContainer: {
+        width: '32%',
+        gap: 10,
+    },
+    subImage: {
+        height: '46.5%',
+        borderRadius: 12,
+        objectFit: 'cover',
+    },
+    // IPTU Box
+    iptuBox: {
+        backgroundColor: '#1e293b',
+        padding: 15,
+        borderRadius: 20,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        borderBottomWidth: 1,
-        borderBottomColor: '#2d4a68',
-        paddingBottom: 15,
-        marginBottom: 30,
     },
-    headerBrand: {
+    iptuLabel: {
+        color: '#A64614',
+        fontSize: 8,
+        fontFamily: 'Helvetica-Bold',
+        textTransform: 'uppercase',
+        marginBottom: 5,
+    },
+    iptuTitle: {
+        color: '#ffffff',
+        fontSize: 14,
+        fontFamily: 'Helvetica-Bold',
+    },
+    iptuExercise: {
+        color: '#94a3b8',
+        fontSize: 9,
+        marginTop: 2,
+    },
+    iptuPrice: {
+        color: '#ffffff',
         fontSize: 18,
         fontFamily: 'Helvetica-Bold',
-        color: '#1a2e44',
+        textAlign: 'right',
     },
-    sectionTitle: {
-        fontSize: 32,
-        fontFamily: 'Helvetica-BoldOblique',
-        color: '#1a2e44',
-        marginBottom: 20,
+    iptuBadge: {
+        alignSelf: 'flex-end',
+        marginTop: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 2,
+        borderRadius: 20,
+        backgroundColor: 'rgba(166, 70, 20, 0.2)',
+        borderWidth: 1,
+        borderColor: 'rgba(166, 70, 20, 0.3)',
     },
-    presentationContainer: {
+    iptuBadgeText: {
+        color: '#A64614',
+        fontSize: 7,
+        fontFamily: 'Helvetica-Bold',
+        textTransform: 'uppercase',
+    },
+    // Footer / Contato
+    footer: {
+        backgroundColor: '#A64614',
+        marginHorizontal: 25,
+        marginTop: 12,
+        padding: 15,
+        borderRadius: 20,
         flexDirection: 'row',
-        gap: 30,
-    },
-    presentationText: {
-        flex: 1,
-    },
-    presentationDescription: {
-        fontSize: 12,
-        color: '#333333',
-        lineHeight: 1.6,
-        textAlign: 'justify',
-    },
-    presentationImage: {
-        width: 280,
-        height: 200,
-        objectFit: 'cover',
-        borderRadius: 4,
-    },
-    areasBar: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        width: '100%',
-        backgroundColor: '#1a2e44',
-        padding: 25,
-        flexDirection: 'row',
-    },
-    areaItem: {
-        marginRight: 60,
-    },
-    areaValue: {
-        fontSize: 28,
-        fontFamily: 'Helvetica-Bold',
-        color: '#ffffff',
-    },
-    areaUnit: {
-        fontSize: 14,
-        color: '#ffffff',
-    },
-    areaLabel: {
-        fontSize: 10,
-        color: '#6b8cae',
-        marginTop: 4,
-    },
-
-    // === PÁGINA 3: DETALHES ===
-    detailsContainer: {
-        flexDirection: 'row',
-        gap: 30,
-        marginTop: 20,
-    },
-    detailsImageContainer: {
-        width: 250,
-        position: 'relative',
-    },
-    detailsImage: {
-        width: '100%',
-        height: 180,
-        objectFit: 'cover',
-        borderRadius: 4,
-    },
-    detailsImageOverlay: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        width: 8,
-        height: '100%',
-        backgroundColor: '#1a2e44',
-    },
-    detailsContent: {
-        flex: 1,
-    },
-    detailsTitle: {
-        fontSize: 18,
-        fontFamily: 'Helvetica-Bold',
-        color: '#1a2e44',
-        marginBottom: 20,
-    },
-    detailRow: {
-        marginBottom: 12,
-    },
-    detailLabel: {
-        fontSize: 10,
-        color: '#666666',
-        marginBottom: 2,
-    },
-    detailValue: {
-        fontSize: 12,
-        fontFamily: 'Helvetica-Bold',
-        color: '#1a2e44',
-    },
-    sectionSubtitle: {
-        fontSize: 14,
-        fontFamily: 'Helvetica-Bold',
-        color: '#1a2e44',
-        marginTop: 20,
-        marginBottom: 10,
-    },
-
-    // === PÁGINA 4: FINAL ===
-    finalPage: {
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-    },
-    finalBackground: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '50%',
-        objectFit: 'cover',
-    },
-    finalHeader: {
-        position: 'absolute',
-        top: 20,
-        left: 20,
-        fontSize: 14,
-        fontFamily: 'Helvetica-Bold',
-        color: '#ffffff',
-    },
-    finalInfoBox: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        width: '100%',
-        height: '45%',
-        backgroundColor: '#1a2e44',
-        padding: 30,
-    },
-    finalAddress: {
-        fontSize: 28,
-        fontFamily: 'Helvetica-Bold',
-        color: '#ffffff',
-        marginBottom: 8,
-    },
-    finalCity: {
-        fontSize: 16,
-        color: '#ffffff',
-        opacity: 0.8,
-    },
-    finalMapsLink: {
-        position: 'absolute',
-        bottom: 30,
-        right: 30,
-        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
     },
-    finalMapsText: {
-        fontSize: 12,
+    footerLabel: {
+        color: 'rgba(255, 255, 255, 0.7)',
+        fontSize: 8,
+        fontFamily: 'Helvetica-Bold',
+        textTransform: 'uppercase',
+        marginBottom: 3,
+    },
+    footerPrice: {
         color: '#ffffff',
-        marginRight: 10,
+        fontSize: 20,
+        fontFamily: 'Helvetica-Bold',
     },
-    mapsIcon: {
-        width: 30,
-        height: 30,
+    contactInfo: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 15,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.3)',
     },
+    contactText: {
+        color: '#ffffff',
+        fontSize: 9,
+        fontFamily: 'Helvetica-Bold',
+        textTransform: 'uppercase',
+    },
+    contactPhone: {
+        color: '#ffffff',
+        fontSize: 12,
+        fontFamily: 'Helvetica-Bold',
+        marginTop: 2,
+    }
 });
 
-// Formatar moeda
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+// Helper para formatar moeda
+const formatCurrency = (value: any) => {
+    const num = typeof value === 'string' ? parseFloat(value) : (value || 0);
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(num);
 };
 
-// Formatar número com separador de milhar
-const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('pt-BR').format(value || 0);
+// Helper para formatar números
+const formatNumber = (value: any) => {
+    const num = typeof value === 'string' ? parseFloat(value) : (value || 0);
+    return new Intl.NumberFormat('pt-BR').format(num);
 };
 
 interface PropertyPDFProps {
@@ -267,164 +242,90 @@ interface PropertyPDFProps {
 }
 
 const PropertyPDF: React.FC<PropertyPDFProps> = ({ property }) => {
-    const currentYear = new Date().getFullYear();
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-        `${property.address}, ${property.number}, ${property.city}, ${property.state}`
-    )}`;
+    const aerialImage = property.aerial_view_url || property.image_url;
+    const frontImage = property.front_view_url;
+    const sideImage = property.side_view_url;
+    const terrainImage = property.terrain_marking_url;
 
     return (
         <Document>
-            {/* PÁGINA 1: CAPA */}
-            <Page size="A4" orientation="landscape" style={styles.page}>
-                <View style={styles.coverPage}>
-                    {/* Imagem de fundo - Visão Aérea */}
-                    {property.aerial_view_url && (
-                        <Image src={property.aerial_view_url} style={styles.coverBackground} />
-                    )}
-
-                    {/* Overlay degradê azul */}
-                    <View style={styles.coverOverlay} />
-
-                    {/* Conteúdo central */}
-                    <View style={styles.coverContent}>
-                        <Text style={styles.coverBrand}>Plus Imóveis</Text>
-                        <Text style={styles.coverTitle}>{property.address || property.name}</Text>
-                        <Text style={styles.coverSubtitle}>{property.city} - {property.state}</Text>
-                    </View>
-
-                    {/* Rodapé */}
-                    <Text style={styles.coverFooter}>
-                        Ficha do Imóvel - Plus Imóveis - {currentYear}
-                    </Text>
-                </View>
-            </Page>
-
-            {/* PÁGINA 2: APRESENTAÇÃO */}
-            <Page size="A4" orientation="landscape" style={styles.page}>
-                <View style={styles.pageWithHeader}>
-                    {/* Cabeçalho */}
-                    <View style={styles.header}>
-                        <Text style={styles.headerBrand}>Plus Imóveis</Text>
-                    </View>
-
-                    {/* Título e conteúdo */}
-                    <Text style={styles.sectionTitle}>Apresentação</Text>
-
-                    <View style={styles.presentationContainer}>
-                        <View style={styles.presentationText}>
-                            <Text style={styles.presentationDescription}>
-                                {property.tenant_category || 'Imóvel disponível para locação. Entre em contato para mais informações sobre este imóvel.'}
+            <Page size="A4" style={styles.page}>
+                <View style={styles.container}>
+                    {/* Header Banner com Título e Endereço Embutidos */}
+                    <View style={styles.bannerContainer}>
+                        {aerialImage && <Image src={aerialImage} style={styles.bannerImage} />}
+                        <View style={styles.bannerOverlay}>
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>Plus Imóveis</Text>
+                            </View>
+                            <Text style={styles.propertyTitle}>{property.name}</Text>
+                            <Text style={styles.propertyAddress}>
+                                {property.address}, {property.number} • {property.neighborhood}, {property.city} - {property.state}
                             </Text>
                         </View>
-
-                        {/* Imagem - Marcação do Terreno */}
-                        {property.terrain_marking_url && (
-                            <Image src={property.terrain_marking_url} style={styles.presentationImage} />
-                        )}
-                    </View>
-                </View>
-
-                {/* Barra inferior com áreas */}
-                <View style={styles.areasBar}>
-                    <View style={styles.areaItem}>
-                        <Text style={styles.areaValue}>
-                            {formatNumber(property.land_area)}<Text style={styles.areaUnit}>m²</Text>
-                        </Text>
-                        <Text style={styles.areaLabel}>Área de Terreno</Text>
-                    </View>
-                    <View style={styles.areaItem}>
-                        <Text style={styles.areaValue}>
-                            {formatNumber(property.built_area)}<Text style={styles.areaUnit}>m²</Text>
-                        </Text>
-                        <Text style={styles.areaLabel}>Área Construída</Text>
-                    </View>
-                </View>
-            </Page>
-
-            {/* PÁGINA 3: DETALHES DO TERRENO */}
-            <Page size="A4" orientation="landscape" style={styles.page}>
-                <View style={styles.pageWithHeader}>
-                    {/* Cabeçalho */}
-                    <View style={styles.header}>
-                        <Text style={styles.headerBrand}>Plus Imóveis</Text>
                     </View>
 
-                    <View style={styles.detailsContainer}>
-                        {/* Imagem - Vista Frontal/Lateral */}
-                        <View style={styles.detailsImageContainer}>
-                            {property.front_view_url ? (
-                                <Image src={property.front_view_url} style={styles.detailsImage} />
-                            ) : property.side_view_url ? (
-                                <Image src={property.side_view_url} style={styles.detailsImage} />
-                            ) : null}
-                            <View style={styles.detailsImageOverlay} />
+                    {/* Especificações */}
+                    <View style={styles.section}>
+                        <View style={styles.sectionTitleContainer}>
+                            <View style={styles.sectionIndicator} />
+                            <Text style={styles.sectionTitle}>Especificações do Imóvel</Text>
                         </View>
+                        <View style={styles.detailsGrid}>
+                            <DetailCard label="Área Terreno" value={`${formatNumber(property.land_area)} m²`} />
+                            <DetailCard label="Área Const." value={`${formatNumber(property.built_area)} m²`} />
+                            <DetailCard label="Testada Princ." value={`${formatNumber(property.main_quota)} m`} />
+                            <DetailCard label="Cota Lateral" value={`${formatNumber(property.lateral_quota)} m`} />
+                            <DetailCard label="Pavimentos" value={String(property.floors || 1)} />
+                            <DetailCard label="Config. Terreno" value={property.terrain_config === 'regular' ? 'Regular' : 'Irregular'} />
+                            <DetailCard label="Sequencial" value={property.sequencial || 'N/A'} />
+                            <DetailCard label="Matrícula" value={property.matricula || 'N/A'} />
+                        </View>
+                    </View>
 
-                        {/* Dados do imóvel */}
-                        <View style={styles.detailsContent}>
-                            <Text style={styles.detailsTitle}>Detalhes do Terreno</Text>
-
-                            <View style={styles.detailRow}>
-                                <Text style={styles.detailLabel}>Localização:</Text>
-                                <Text style={styles.detailValue}>
-                                    {property.address}, {property.number}{property.complement ? `, ${property.complement}` : ''}
-                                </Text>
-                            </View>
-
-                            <View style={styles.detailRow}>
-                                <Text style={styles.detailLabel}>Matrícula:</Text>
-                                <Text style={styles.detailValue}>{property.registration || 'N/A'}</Text>
-                            </View>
-
-                            <Text style={styles.sectionSubtitle}>Parâmetros Construtivos</Text>
-
-                            <View style={styles.detailRow}>
-                                <Text style={styles.detailLabel}>Área do Lote:</Text>
-                                <Text style={styles.detailValue}>{formatNumber(property.land_area)} m²</Text>
-                            </View>
-
-                            <View style={styles.detailRow}>
-                                <Text style={styles.detailLabel}>Cota Principal:</Text>
-                                <Text style={styles.detailValue}>{formatNumber(property.main_quota || 0)} m</Text>
-                            </View>
-
-                            <View style={styles.detailRow}>
-                                <Text style={styles.detailLabel}>Cota Lateral:</Text>
-                                <Text style={styles.detailValue}>{formatNumber(property.lateral_quota || 0)} m²</Text>
-                            </View>
-
-                            <View style={styles.detailRow}>
-                                <Text style={styles.detailLabel}>IPTU:</Text>
-                                <Text style={styles.detailValue}>{formatCurrency(property.iptu_value || 0)}</Text>
+                    {/* Tour Visual */}
+                    <View style={styles.section}>
+                        <View style={styles.sectionTitleContainer}>
+                            <View style={styles.sectionIndicator} />
+                            <Text style={styles.sectionTitle}>Tour Visual</Text>
+                        </View>
+                        <View style={styles.galleryGrid}>
+                            {frontImage && <Image src={frontImage} style={styles.mainImage} />}
+                            <View style={styles.subImagesContainer}>
+                                {sideImage && <Image src={sideImage} style={styles.subImage} />}
+                                {terrainImage && <Image src={terrainImage} style={styles.subImage} />}
                             </View>
                         </View>
                     </View>
-                </View>
-            </Page>
 
-            {/* PÁGINA 4: FINAL */}
-            <Page size="A4" orientation="landscape" style={styles.page}>
-                <View style={styles.finalPage}>
-                    {/* Imagem de fundo - Visão Aérea */}
-                    {property.aerial_view_url && (
-                        <Image src={property.aerial_view_url} style={styles.finalBackground} />
-                    )}
+                    {/* IPTU */}
+                    <View style={styles.section}>
+                        <View style={styles.iptuBox}>
+                            <View>
+                                <Text style={styles.iptuLabel}>Encargos Anuais</Text>
+                                <Text style={styles.iptuTitle}>Valor do IPTU</Text>
+                                <Text style={styles.iptuExercise}>Exercício Corrente</Text>
+                            </View>
+                            <View>
+                                <Text style={styles.iptuPrice}>{formatCurrency(property.iptu_value)}</Text>
+                                <View style={styles.iptuBadge}>
+                                    <Text style={styles.iptuBadgeText}>Cota Única</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
 
-                    {/* Cabeçalho */}
-                    <Text style={styles.finalHeader}>Plus Imóveis</Text>
-
-                    {/* Box inferior com endereço */}
-                    <View style={styles.finalInfoBox}>
-                        <Text style={styles.finalAddress}>{property.address}</Text>
-                        <Text style={styles.finalCity}>{property.city}-{property.state}</Text>
-
-                        {/* Link para Google Maps */}
-                        <View style={styles.finalMapsLink}>
-                            <Link src={googleMapsUrl}>
-                                <Text style={styles.finalMapsText}>Ir para o Google Maps</Text>
-                            </Link>
-                            {/* Ícone do Google Maps - usando emoji como placeholder */}
-                            <Text style={{ fontSize: 24 }}>📍</Text>
+                    {/* Footer / Contato */}
+                    <View style={styles.footer}>
+                        <View>
+                            <Text style={styles.footerLabel}>Valor de Aluguel</Text>
+                            <Text style={styles.footerPrice}>
+                                {property.price ? formatCurrency(property.price) : 'Sob Consulta'}
+                            </Text>
+                        </View>
+                        <View style={styles.contactInfo}>
+                            <Text style={styles.contactText}>Contato Whatsapp</Text>
+                            <Text style={styles.contactPhone}>81 99999-9999</Text>
                         </View>
                     </View>
                 </View>
@@ -432,5 +333,14 @@ const PropertyPDF: React.FC<PropertyPDFProps> = ({ property }) => {
         </Document>
     );
 };
+
+const DetailCard = ({ label, value }: { label: string; value: string }) => (
+    <View style={styles.detailCard}>
+        <View style={styles.detailHeader}>
+            <Text style={styles.detailLabel}>{label}</Text>
+        </View>
+        <Text style={styles.detailValue}>{value}</Text>
+    </View>
+);
 
 export default PropertyPDF;

@@ -33,10 +33,11 @@ interface PropertyDetailsProps {
     onBack: () => void;
     onGenerateFicha: (id: string) => void;
     onEditProperty?: (id: string) => void; // Prop para editar imóvel
+    onDeleteProperty?: (id: string) => void; // Prop para excluir imóvel
     user?: any; // Adicionando prop user
 }
 
-const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperties, onBack, onGenerateFicha, onEditProperty, user }) => {
+const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperties, onBack, onGenerateFicha, onEditProperty, onDeleteProperty, user }) => {
     const [generatingPDF, setGeneratingPDF] = useState(false);
 
     const handleGeneratePDF = async () => {
@@ -170,7 +171,11 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
         if (action === 'delete') {
             if (['admin', 'manager'].includes(userRole)) {
                 if (confirm('Tem certeza que deseja excluir este imóvel? Esta ação não pode ser desfeita.')) {
-                    alert(`Funcionalidade de Exclusão (Role: ${userRole}) - Em breve`);
+                    if (onDeleteProperty) {
+                        onDeleteProperty(property.id);
+                    } else {
+                        alert('Funcionalidade de exclusão não disponível.');
+                    }
                 }
             } else {
                 alert('Acesso Negado: Apenas Administradores e Gestores podem excluir imóveis.');
@@ -217,7 +222,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                             {card.icon}
                         </div>
                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{card.label}</p>
-                        <p className="text-xl font-extrabold text-slate-900">{card.value}</p>
+                        <p className="text-lg font-bold text-slate-900">{card.value}</p>
                     </div>
                 ))}
             </div>
@@ -225,8 +230,8 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
                 <div className="lg:col-span-2 space-y-6">
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-orange-600" />
+                        <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-orange-600" />
                             Informações Gerais
                         </h2>
 
@@ -266,8 +271,8 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                     </section>
 
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-orange-600" />
+                        <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-orange-600" />
                             Localização
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -281,8 +286,8 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                     </section>
 
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <DollarSign className="w-5 h-5 text-orange-600" />
+                        <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                            <DollarSign className="w-4 h-4 text-orange-600" />
                             Dados Financeiros
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
@@ -296,8 +301,8 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
 
                     {/* Parâmetros Construtivos */}
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <Ruler className="w-5 h-5 text-orange-600" />
+                        <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                            <Ruler className="w-4 h-4 text-orange-600" />
                             Parâmetros Construtivos
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
@@ -312,8 +317,8 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
 
                     {/* Registros */}
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-orange-600" />
+                        <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-orange-600" />
                             Registros
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
@@ -324,8 +329,8 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
 
                     {/* Impostos */}
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-orange-600" />
+                        <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-orange-600" />
                             Impostos
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-12">
@@ -339,8 +344,8 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                 <div className="space-y-6">
                     {/* Galeria de Fotos Lateral */}
                     <section className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-                        <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                            <Home className="w-5 h-5 text-orange-600" />
+                        <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                            <Home className="w-4 h-4 text-orange-600" />
                             Galeria de Fotos
                         </h2>
                         <div className="space-y-4">

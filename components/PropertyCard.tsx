@@ -54,7 +54,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onGenerateFicha, 
             </div>
 
             <div className="p-4 flex flex-col flex-grow">
-                <h3 className="font-bold text-slate-800 text-base mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                <h3 className="font-bold text-slate-800 text-base mb-1 line-clamp-1 group-hover:text-orange-600 transition-colors">
                     {property.name}
                 </h3>
 
@@ -70,15 +70,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onGenerateFicha, 
                 <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
                     <button
                         onClick={() => onGenerateFicha(property.id)}
-                        className="flex-1 flex items-center justify-center gap-2 bg-[#A64614] hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-orange-100"
+                        className="flex-1 flex items-center justify-center gap-2 bg-[#A64614] hover:bg-orange-600 text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-md shadow-orange-100"
                     >
-                        <FileText className="w-4 h-4" />
+                        <FileText className="w-3.5 h-3.5" />
                         Ver Ficha
                     </button>
 
                     <button
                         onClick={() => onViewDetails(property.id)}
-                        className="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-50 transition-all flex items-center gap-1 group/btn text-xs font-bold shrink-0"
+                        className="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-50 transition-all flex items-center gap-1 group/btn text-xs font-semibold shrink-0"
                     >
                         Detalhes
                         <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />

@@ -14,6 +14,7 @@ import PropertyDetails from './components/PropertyDetails';
 import PublicPropertySheet from './components/PublicPropertySheet';
 import LeadCaptureForm from './components/LeadCaptureForm';
 import LeadsListView from './components/LeadsListView';
+import NegotiationKanban from './components/NegotiationKanban';
 import PropertySheetModal from './components/PropertySheetModal';
 import { supabase } from './lib/supabase';
 import { User } from '@supabase/supabase-js';
@@ -46,7 +47,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingAi, setLoadingAi] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'properties' | 'form' | 'details' | 'leads'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'properties' | 'form' | 'details' | 'leads' | 'negotiation'>('dashboard');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedDetailPropertyId, setSelectedDetailPropertyId] = useState<string | null>(null);
   const [publicPropertyId, setPublicPropertyId] = useState<string | null>(null);
@@ -72,6 +73,7 @@ const App: React.FC = () => {
     address: '',
     number: '',
     neighborhood: '',
+    complement: '',
     city: '',
     state: '',
     cep: '',
@@ -165,22 +167,24 @@ const App: React.FC = () => {
       setLoading(true);
 
       const propertyToSave = {
-        name: formData.title,
-        property_type: formData.type,
-        address: formData.address,
-        number: formData.number,
-        neighborhood: formData.neighborhood,
-        city: formData.city,
-        state: formData.state,
-        zip_code: formData.cep,
+        name: formData.title || 'N/A',
+        property_type: formData.type || 'N/A',
+        address: formData.address || 'N/A',
+        number: formData.number || 'N/A',
+        neighborhood: formData.neighborhood || 'N/A',
+        complement: formData.complement || 'N/A',
+        city: formData.city || 'N/A',
+        state: formData.state || 'N/A',
+        zip_code: formData.cep || 'N/A',
         is_complex: formData.isComplex,
-        description: formData.description,
+        description: formData.description || 'N/A',
 
         // Parâmetros Construtivos
         land_area: parseFloat(formData.landArea || '0'),
         built_area: parseFloat(formData.builtArea || '0'),
         main_quota: parseFloat(formData.mainQuota || '0'),
         lateral_quota: parseFloat(formData.lateralQuota || '0'),
+        floors: parseInt(formData.floors || '0'),
         terrain_config: formData.terrainConfig,
 
         // Impostos
@@ -193,7 +197,9 @@ const App: React.FC = () => {
         aerial_view_url: formData.aerialViewUrl,
         front_view_url: formData.frontViewUrl,
         side_view_url: formData.sideViewUrl,
-        price: parseFloat(formData.price || '0'),
+        market_rent: parseFloat(formData.price || '0'),
+        registration: formData.matricula || 'N/A',
+        sequencial: formData.sequencial || 'N/A',
 
         // Defaults e outros campos
         has_ficha: !!(formData.terrainMarkingUrl && formData.aerialViewUrl),
@@ -227,6 +233,7 @@ const App: React.FC = () => {
         address: '',
         number: '',
         neighborhood: '',
+        complement: '',
         city: '',
         state: '',
         cep: '',
@@ -313,6 +320,67 @@ const App: React.FC = () => {
   const handleGenerateFicha = (id: string) => {
     setSelectedPropertyId(id);
     setIsSheetModalOpen(true);
+  };
+
+  const handleEditProperty = (id: string) => {
+    const property = properties.find(p => p.id === id);
+    if (!property) return;
+
+    setFormData({
+      title: property.name || '',
+      type: (property.property_type as PropertyType) || PropertyType.CASA,
+      description: property.description || '',
+      isComplex: property.is_complex || false,
+      address: property.address || '',
+      number: property.number || '',
+      neighborhood: property.neighborhood || '',
+      complement: property.complement || '',
+      city: property.city || '',
+      state: property.state || '',
+      cep: property.zip_code || '',
+      landArea: property.land_area?.toString() || '',
+      builtArea: property.built_area?.toString() || '',
+      mainQuota: property.main_quota?.toString() || '',
+      lateralQuota: property.lateral_quota?.toString() || '',
+      floors: property.floors?.toString() || '',
+      terrainConfig: property.terrain_config || 'regular',
+      iptuValue: property.iptu_value?.toString() || '',
+      spuValue: property.spu_value?.toString() || '',
+      otherTaxes: property.other_taxes?.toString() || '',
+      terrainMarkingUrl: property.terrain_marking_url,
+      aerialViewUrl: property.aerial_view_url,
+      frontViewUrl: property.front_view_url,
+      sideViewUrl: property.side_view_url,
+      price: property.market_rent?.toString() || '',
+      matricula: property.registration || '',
+      sequencial: property.sequencial || '',
+      images: []
+    });
+
+    setSelectedPropertyId(id);
+    setCurrentView('form');
+  };
+
+  const handleDeleteProperty = async (id: string) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('properties')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      alert('Imóvel excluído com sucesso!');
+      await fetchProperties();
+      setCurrentView('properties');
+      setSelectedDetailPropertyId(null);
+    } catch (error: any) {
+      console.error('Erro ao excluir imóvel:', error);
+      alert('Erro ao excluir imóvel: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -425,15 +493,6 @@ const App: React.FC = () => {
     if (currentView === 'dashboard') {
       return (
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex justify-end mb-6">
-            <button
-              onClick={() => setCurrentView('leads')}
-              className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-slate-700 font-bold hover:bg-slate-50 transition-all text-sm"
-            >
-              <Users className="w-4 h-4 text-[#A64614]" />
-              Ver Leads Capturados
-            </button>
-          </div>
           <Dashboard />
         </div>
       );
@@ -442,16 +501,15 @@ const App: React.FC = () => {
     if (currentView === 'leads') {
       return (
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <PageHeader
-            title="Leads Capturados"
-            subtitle="Veja quem demonstrou interesse nos seus imóveis através das fichas virtuais."
-            actions={[
-              { label: 'Voltar', onClick: () => setCurrentView('dashboard'), icon: <ArrowLeft className="w-4 h-4" />, variant: 'secondary' }
-            ]}
-          />
-          <div className="mt-8">
-            <LeadsListView />
-          </div>
+          <LeadsListView onBack={() => setCurrentView('dashboard')} />
+        </div>
+      );
+    }
+
+    if (currentView === 'negotiation') {
+      return (
+        <div className="h-[calc(100vh-64px)] overflow-hidden">
+          <NegotiationKanban />
         </div>
       );
     }
@@ -526,7 +584,8 @@ const App: React.FC = () => {
             setSelectedDetailPropertyId(null);
           }}
           onGenerateFicha={handleGenerateFicha}
-          onEditProperty={handleGenerateFicha}
+          onEditProperty={handleEditProperty}
+          onDeleteProperty={handleDeleteProperty}
           user={session}
         />
       );
@@ -597,7 +656,7 @@ const App: React.FC = () => {
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          className={`flex-1 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${!formData.isComplex
+                          className={`flex-1 px-4 py-2.5 rounded-xl border-2 font-semibold text-xs transition-all ${!formData.isComplex
                             ? 'border-[#A64614] bg-orange-50 text-orange-700'
                             : 'border-slate-200 text-slate-500 hover:border-slate-300'
                             }`}
@@ -607,7 +666,7 @@ const App: React.FC = () => {
                         </button>
                         <button
                           type="button"
-                          className={`flex-1 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${formData.isComplex
+                          className={`flex-1 px-4 py-2.5 rounded-xl border-2 font-semibold text-xs transition-all ${formData.isComplex
                             ? 'border-[#A64614] bg-orange-50 text-orange-700'
                             : 'border-slate-200 text-slate-500 hover:border-slate-300'
                             }`}
@@ -646,8 +705,8 @@ const App: React.FC = () => {
                   </div>
 
                   {/* Bairro, Cidade, UF */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div className="sm:col-span-2">
                       <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Bairro</label>
                       <input
                         type="text"
@@ -658,7 +717,18 @@ const App: React.FC = () => {
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 placeholder:text-slate-400"
                       />
                     </div>
-                    <div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Complemento</label>
+                      <input
+                        type="text"
+                        name="complement"
+                        value={formData.complement || ''}
+                        onChange={handleInputChange}
+                        placeholder="Sala 101, Bloco A"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 placeholder:text-slate-400"
+                      />
+                    </div>
+                    <div className="sm:col-span-3">
                       <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Cidade</label>
                       <input
                         type="text"
@@ -669,7 +739,7 @@ const App: React.FC = () => {
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 placeholder:text-slate-400"
                       />
                     </div>
-                    <div>
+                    <div className="sm:col-span-1">
                       <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">UF</label>
                       <input
                         type="text"
@@ -697,9 +767,9 @@ const App: React.FC = () => {
                     <button
                       onClick={handleGenerateAiDescription}
                       disabled={loadingAi}
-                      className="flex items-center gap-1.5 text-xs font-bold text-[#A64614] hover:text-orange-700 transition-colors bg-orange-50 px-2 py-1.5 rounded-lg disabled:opacity-50"
+                      className="flex items-center gap-1.5 text-[10px] font-semibold text-[#A64614] hover:text-orange-700 transition-colors bg-orange-50 px-2 py-1 rounded-lg disabled:opacity-50"
                     >
-                      <span className="w-3.5 h-3.5 flex items-center justify-center text-[10px] bg-[#A64614] text-white rounded-full">✨</span>
+                      <span className="w-3 h-3 flex items-center justify-center text-[8px] bg-[#A64614] text-white rounded-full">✨</span>
                       {loadingAi ? 'Gerando...' : 'Gerar com IA'}
                     </button>
                   </div>

@@ -14,16 +14,14 @@ const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({ propertyId, propertyN
         name: '',
         email: '',
         phone: '',
+        role: '',
+        company: ''
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.name || !formData.email) {
-            alert('Por favor, preencha nome e e-mail.');
-            return;
-        }
-
         setLoading(true);
+
         try {
             const { error } = await supabase
                 .from('leads')
@@ -33,17 +31,16 @@ const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({ propertyId, propertyN
                         name: formData.name,
                         email: formData.email,
                         phone: formData.phone,
+                        role: formData.role,
+                        company: formData.company
                     },
                 ]);
 
             if (error) throw error;
-
-            // Save in localStorage to "remember" this visitor for a while
-            localStorage.setItem(`lead_captured_${propertyId}`, 'true');
             onSuccess();
-        } catch (error: any) {
-            console.error('Erro ao salvar lead:', error.message);
-            alert('Erro ao processar seus dados. Por favor, tente novamente.');
+        } catch (error) {
+            console.error('Erro ao capturar lead:', error);
+            alert('Ocorreu um erro. Por favor, tente novamente.');
         } finally {
             setLoading(false);
         }
@@ -52,85 +49,110 @@ const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({ propertyId, propertyN
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in duration-300">
-                <div className="relative h-32 bg-[#C5A059] flex items-center justify-center overflow-hidden">
-                    <div className="absolute inset-0 opacity-20">
+                <div className="relative h-40 bg-gradient-to-br from-[#C5A059] to-[#AD8B45] flex flex-col items-center justify-center overflow-hidden border-b border-white/10">
+                    <div className="absolute inset-0 opacity-10">
                         <div className="absolute -top-10 -left-10 w-40 h-40 bg-white rounded-full"></div>
                         <div className="absolute -bottom-10 -right-10 w-60 h-60 bg-white rounded-full"></div>
                     </div>
-                    <div className="relative text-center px-6">
-                        <h2 className="text-white text-xl font-bold">Interesse no Imóvel?</h2>
-                        <p className="text-white/80 text-sm mt-1">{propertyName}</p>
+                    <div className="relative text-center px-8">
+                        <h2 className="text-white text-2xl font-bold tracking-tight">Interesse no Imóvel?</h2>
+                        <p className="text-white/90 text-sm mt-2 font-medium">{propertyName}</p>
                     </div>
                 </div>
 
-                <div className="p-8">
-                    <p className="text-slate-600 dark:text-slate-400 text-sm text-center mb-8">
+                <div className="p-8 bg-[#111827]">
+                    <p className="text-slate-400 text-sm text-center mb-10 leading-relaxed px-2">
                         Preencha seus dados abaixo para acessar a ficha completa e fotos exclusivas deste imóvel.
                     </p>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Nome Completo</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                    <User size={18} />
+                        <div className="grid grid-cols-1 gap-5">
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">NOME COMPLETO</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                                        <User size={18} />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Seu nome"
+                                        className="w-full pl-12 pr-4 py-3.5 bg-slate-800/50 border border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-[#C5A059]/20 focus:border-[#C5A059] transition-all text-white placeholder:text-slate-600"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    />
                                 </div>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="Seu nome"
-                                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#C5A059]/20 focus:border-[#C5A059] transition-all text-slate-800 dark:text-white"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                />
                             </div>
-                        </div>
 
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">E-mail</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                    <Mail size={18} />
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">E-MAIL</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                                        <Mail size={18} />
+                                    </div>
+                                    <input
+                                        type="email"
+                                        required
+                                        placeholder="seu@email.com"
+                                        className="w-full pl-12 pr-4 py-3.5 bg-slate-800/50 border border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-[#C5A059]/20 focus:border-[#C5A059] transition-all text-white placeholder:text-slate-600"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    />
                                 </div>
-                                <input
-                                    type="email"
-                                    required
-                                    placeholder="seu@email.com"
-                                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#C5A059]/20 focus:border-[#C5A059] transition-all text-slate-800 dark:text-white"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                />
                             </div>
-                        </div>
 
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Telefone (WhatsApp)</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                    <Phone size={18} />
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">TELEFONE (WHATSAPP)</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                                        <Phone size={18} />
+                                    </div>
+                                    <input
+                                        type="tel"
+                                        placeholder="(00) 00000-0000"
+                                        className="w-full pl-12 pr-4 py-3.5 bg-slate-800/50 border border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-[#C5A059]/20 focus:border-[#C5A059] transition-all text-white placeholder:text-slate-600"
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    />
                                 </div>
-                                <input
-                                    type="tel"
-                                    placeholder="(00) 00000-0000"
-                                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-[#C5A059]/20 focus:border-[#C5A059] transition-all text-slate-800 dark:text-white"
-                                    value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">FUNÇÃO</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Seu cargo"
+                                        className="w-full px-4 py-3.5 bg-slate-800/50 border border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-[#C5A059]/20 focus:border-[#C5A059] transition-all text-white placeholder:text-slate-600"
+                                        value={formData.role}
+                                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">EMPRESA</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Sua empresa"
+                                        className="w-full px-4 py-3.5 bg-slate-800/50 border border-slate-700/50 rounded-2xl focus:ring-2 focus:ring-[#C5A059]/20 focus:border-[#C5A059] transition-all text-white placeholder:text-slate-600"
+                                        value={formData.company}
+                                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                    />
+                                </div>
                             </div>
                         </div>
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full mt-4 bg-[#C5A059] hover:bg-[#C5A059]/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-[#C5A059]/20 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+                            className="w-full mt-8 bg-[#C5A059] hover:bg-[#AD8B45] text-white font-bold py-4.5 rounded-2xl shadow-xl shadow-[#C5A059]/10 transition-all flex items-center justify-center gap-3 group disabled:opacity-50 text-base active:scale-[0.98]"
                         >
                             {loading ? 'Processando...' : 'Ver Ficha Completa'}
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </button>
                     </form>
 
-                    <p className="text-[10px] text-slate-400 text-center mt-6 uppercase tracking-widest font-medium">
-                        Seus dados estão seguros conosco.
+                    <p className="text-[10px] text-slate-500 text-center mt-8 uppercase tracking-[0.2em] font-bold">
+                        SEUS DADOS ESTÃO SEGUROS CONOSCO.
                     </p>
                 </div>
             </div>

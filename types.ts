@@ -89,6 +89,7 @@ export interface PropertyData {
   address: string;
   number: string;
   neighborhood: string;
+  complement: string;
   city: string;
   state: string;
   cep: string;
@@ -121,9 +122,36 @@ export interface PropertyData {
 
 export interface Lead {
   id: string;
-  property_id: string;
+  property_id: string | null;
   name: string;
   email: string;
   phone: string;
+  level?: string;
+  marking?: string;
+  author_id?: string;
+  author_name?: string; // Joined field
+  role?: string;
+  company?: string;
   created_at: string;
+}
+
+export enum NegotiationStage {
+  OPPORTUNITY = 'Oportunidade',
+  CONTACTING = 'Contactando',
+  ENGAGED = 'Engajado',
+  NEGOTIATING = 'Negociando',
+  CLOSED_WON = 'Negócio Fechado',
+  CLOSED_LOST = 'Perdido'
+}
+
+export interface Negotiation {
+  id: string;
+  title: string;
+  client_name: string;
+  value?: number;
+  probability: number;
+  stage: NegotiationStage;
+  property_id?: string | null;
+  created_at: string;
+  properties?: Property | null;
 }

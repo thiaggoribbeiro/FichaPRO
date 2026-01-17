@@ -32,7 +32,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, breadcrumbs, a
             )}
             <div className="flex flex-wrap justify-between items-end gap-4 mt-2">
                 <div>
-                    <h2 className="text-3xl font-black tracking-tight">{title}</h2>
+                    <h2 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h2>
                     {subtitle && <p className="text-slate-500 mt-1">{subtitle}</p>}
                 </div>
                 {actions && (
@@ -41,13 +41,13 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, breadcrumbs, a
                             <button
                                 key={idx}
                                 onClick={action.onClick}
-                                className={`h-11 px-6 rounded-xl font-bold flex items-center gap-2 transition-all active:scale-[0.98] ${action.variant === 'primary'
-                                    ? 'bg-[#A64614] text-white shadow-lg shadow-[#A64614]/20 hover:bg-[#A64614]/90'
+                                className={`h-10 px-4 rounded-xl font-semibold flex items-center gap-2 transition-all active:scale-[0.98] ${action.variant === 'primary'
+                                    ? 'bg-[#A64614] text-white shadow-md shadow-[#A64614]/10 hover:bg-[#A64614]/90'
                                     : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
                                     }`}
                             >
-                                {action.icon}
-                                <span>{action.label}</span>
+                                <span className="flex items-center justify-center scale-90">{action.icon}</span>
+                                <span className="text-sm">{action.label}</span>
                             </button>
                         )) : actions}
                     </div>

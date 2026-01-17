@@ -43,7 +43,7 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ properties, onGener
                                 <td className="px-6 py-4">
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-2">
-                                            <span className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors cursor-pointer" onClick={() => onViewDetails(property.id)}>
+                                            <span className="font-bold text-slate-800 group-hover:text-orange-600 transition-colors cursor-pointer" onClick={() => onViewDetails(property.id)}>
                                                 {property.name}
                                             </span>
                                             {property.is_complex ? (
@@ -71,14 +71,14 @@ const PropertyListView: React.FC<PropertyListViewProps> = ({ properties, onGener
                                     <div className="flex items-center justify-end gap-3">
                                         <button
                                             onClick={() => onGenerateFicha(property.id)}
-                                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all bg-[#A64614] hover:bg-blue-600 text-white shadow-sm"
+                                            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all bg-[#A64614] hover:bg-orange-600 text-white shadow-sm whitespace-nowrap"
                                         >
                                             <FileText className="w-3.5 h-3.5" />
                                             Ver Ficha
                                         </button>
                                         <button
                                             onClick={() => onViewDetails(property.id)}
-                                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                            className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
                                         >
                                             <ChevronRight className="w-5 h-5" />
                                         </button>
