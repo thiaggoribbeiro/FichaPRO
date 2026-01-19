@@ -17,6 +17,7 @@ import LeadsListView from './components/LeadsListView';
 import NegotiationKanban from './components/NegotiationKanban';
 import PropertySheetModal from './components/PropertySheetModal';
 import PasswordChangeModal from './components/PasswordChangeModal';
+import ProcessTracking from './components/ProcessTracking';
 import { supabase } from './lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { Plus, Home, ArrowLeft, DollarSign, Users } from 'lucide-react';
@@ -48,7 +49,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingAi, setLoadingAi] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'properties' | 'form' | 'details' | 'leads' | 'negotiation'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'properties' | 'form' | 'details' | 'leads' | 'negotiation' | 'tracking'>('dashboard');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedDetailPropertyId, setSelectedDetailPropertyId] = useState<string | null>(null);
   const [publicPropertyId, setPublicPropertyId] = useState<string | null>(null);
@@ -105,9 +106,22 @@ const App: React.FC = () => {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session?.user ?? null);
-      if (session?.user) {
-        checkForcePasswordChange(session.user.id);
+      const newUser = session?.user ?? null;
+      setSession(newUser);
+
+      if (newUser) {
+        checkForcePasswordChange(newUser.id);
+
+        // Log login if the event is SIGNED_IN
+        if (_event === 'SIGNED_IN') {
+          supabase.from('system_logs').insert({
+            user_id: newUser.id,
+            user_name: newUser.user_metadata?.full_name || 'Usuário',
+            user_email: newUser.email,
+            action: 'LOGIN',
+            details: 'Acesso realizado com sucesso'
+          });
+        }
       } else {
         setForcePasswordChange(false);
       }
@@ -140,6 +154,21 @@ const App: React.FC = () => {
     if (error) console.error('Erro ao buscar imóveis:', error.message);
     else setProperties(data || []);
   };
+
+  const logAction = useCallback(async (action: string, details: string) => {
+    if (!session) return;
+    try {
+      await supabase.from('system_logs').insert({
+        user_id: session.id,
+        user_name: session.user_metadata?.full_name || 'Usuário',
+        user_email: session.email,
+        action,
+        details
+      });
+    } catch (error) {
+      console.error('Error logging action:', error);
+    }
+  }, [session]);
 
   const checkForcePasswordChange = async (userId: string) => {
     try {
@@ -183,6 +212,13 @@ const App: React.FC = () => {
   };
 
   const handleSave = async () => {
+    // Check permission to create/edit property
+    const userRole = session?.user_metadata?.role || 'Visitante';
+    if (!['Administrador', 'Gestor', 'Usuário'].includes(userRole)) {
+      alert('Acesso Negado: Apenas Administradores, Gestores e Usuários podem salvar imóveis.');
+      return;
+    }
+
     if (!formData.title) {
       alert('Por favor, insira pelo menos um título para o imóvel.');
       return;
@@ -246,6 +282,13 @@ const App: React.FC = () => {
 
       alert(selectedPropertyId ? 'Imóvel atualizado com sucesso!' : 'Imóvel cadastrado com sucesso!');
       await fetchProperties();
+
+      // Log the action
+      logAction(
+        selectedPropertyId ? 'ATUALIZAÇÃO DE IMÓVEL' : 'CRIAÇÃO DE IMÓVEL',
+        `Imóvel: ${formData.title}${formData.city ? `, Cidade: ${formData.city}` : ''}`
+      );
+
       setCurrentView('properties');
 
       // Limpar form
@@ -387,6 +430,13 @@ const App: React.FC = () => {
   };
 
   const handleDeleteProperty = async (id: string) => {
+    // Check permission to delete property
+    const userRole = session?.user_metadata?.role || 'Visitante';
+    if (!['Administrador', 'Gestor'].includes(userRole)) {
+      alert('Acesso Negado: Apenas Administradores e Gestores podem excluir imóveis.');
+      return;
+    }
+
     try {
       setLoading(true);
       const { error } = await supabase
@@ -397,7 +447,15 @@ const App: React.FC = () => {
       if (error) throw error;
 
       alert('Imóvel excluído com sucesso!');
+
+      const deletedProperty = properties.find(p => p.id === id);
       await fetchProperties();
+
+      // Log the action
+      if (deletedProperty) {
+        logAction('EXCLUSÃO DE IMÓVEL', `Imóvel: ${deletedProperty.name}`);
+      }
+
       setCurrentView('properties');
       setSelectedDetailPropertyId(null);
     } catch (error: any) {
@@ -500,12 +558,17 @@ const App: React.FC = () => {
             <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-sm">
               <h2 className="text-xl font-bold text-slate-800">Imóvel não encontrado</h2>
               <p className="text-slate-500 mt-2">O link pode estar quebrado ou o imóvel não está mais disponível.</p>
-              <button
-                onClick={() => setPublicPropertyId(null)}
-                className="mt-6 bg-[#A64614] text-white px-6 py-2 rounded-xl font-bold"
-              >
-                Ir para Login
-              </button>
+              {['Administrador', 'Gestor', 'Usuário'].includes(session?.user_metadata?.role || 'Visitante') && (
+                <button
+                  onClick={() => {
+                    setCurrentView('form');
+                    setSelectedPropertyId(null); // Clear selected property for new creation
+                  }}
+                  className="mt-6 bg-[#A64614] text-white px-6 py-2 rounded-xl font-bold"
+                >
+                  Novo Imóvel
+                </button>
+              )}
             </div>
           </div>
         );
@@ -519,6 +582,12 @@ const App: React.FC = () => {
   }
 
   const renderContent = () => {
+    if (currentView === 'tracking') {
+      return (
+        <ProcessTracking onBack={() => setCurrentView('dashboard')} />
+      );
+    }
+
     if (currentView === 'dashboard') {
       return (
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -530,7 +599,11 @@ const App: React.FC = () => {
     if (currentView === 'leads') {
       return (
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <LeadsListView onBack={() => setCurrentView('dashboard')} />
+          <LeadsListView
+            userRole={session?.user_metadata?.role || 'Visitante'}
+            onBack={() => setCurrentView('dashboard')}
+            onLogAction={logAction}
+          />
         </div>
       );
     }
@@ -538,7 +611,10 @@ const App: React.FC = () => {
     if (currentView === 'negotiation') {
       return (
         <div className="h-[calc(100vh-64px)] overflow-hidden">
-          <NegotiationKanban />
+          <NegotiationKanban
+            userRole={session?.user_metadata?.role || 'Visitante'}
+            onLogAction={logAction}
+          />
         </div>
       );
     }
@@ -550,9 +626,9 @@ const App: React.FC = () => {
             <PageHeader
               title="Base de Imóveis"
               subtitle={`Gerencie seus ${filteredProperties.length} imóveis (unificados) cadastrados no ImobLead.`}
-              actions={[
+              actions={['Administrador', 'Gestor', 'Usuário'].includes(session?.user_metadata?.role || 'Visitante') ? [
                 { label: 'Novo Imóvel', onClick: () => setCurrentView('form'), icon: <Plus className="w-4 h-4" />, variant: 'primary' }
-              ]}
+              ] : []}
             />
           </div>
 
