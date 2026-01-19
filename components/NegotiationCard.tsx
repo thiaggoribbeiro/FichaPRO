@@ -5,9 +5,10 @@ import { DollarSign, User, TrendingUp, MoreHorizontal } from 'lucide-react';
 interface NegotiationCardProps {
     negotiation: Negotiation;
     onDragStart: (e: React.DragEvent, negotiation: Negotiation) => void;
+    userRole?: string;
 }
 
-const NegotiationCard: React.FC<NegotiationCardProps> = ({ negotiation, onDragStart }) => {
+const NegotiationCard: React.FC<NegotiationCardProps> = ({ negotiation, onDragStart, userRole = 'Visitante' }) => {
     const getStageColor = (stage: NegotiationStage) => {
         switch (stage) {
             case NegotiationStage.OPPORTUNITY: return 'border-orange-500';
@@ -27,9 +28,9 @@ const NegotiationCard: React.FC<NegotiationCardProps> = ({ negotiation, onDragSt
 
     return (
         <div
-            draggable
+            draggable={['Administrador', 'Gestor', 'Usuário'].includes(userRole)}
             onDragStart={(e) => onDragStart(e, negotiation)}
-            className={`bg-white p-4 rounded-xl shadow-sm border-l-4 ${getStageColor(negotiation.stage)} hover:shadow-md transition-all cursor-grab active:cursor-grabbing group animate-in fade-in slide-in-from-bottom-2 duration-300`}
+            className={`bg-white p-4 rounded-xl shadow-sm border-l-4 ${getStageColor(negotiation.stage)} hover:shadow-md transition-all ${['Administrador', 'Gestor', 'Usuário'].includes(userRole) ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'} group animate-in fade-in slide-in-from-bottom-2 duration-300`}
         >
             <div className="flex justify-between items-start mb-3">
                 <h4 className="text-sm font-bold text-slate-800 leading-tight group-hover:text-[#A64614] transition-colors">

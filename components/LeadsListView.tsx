@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 import { Lead, Property } from '../types';
 import {
     User, Mail, Phone, Calendar, Home,
@@ -14,9 +15,11 @@ interface LeadWithProperty extends Lead {
 
 interface LeadsListViewProps {
     onBack?: () => void;
+    userRole?: string;
+    onLogAction?: (action: string, details: string) => void;
 }
 
-const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack }) => {
+const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack, userRole = 'Visitante', onLogAction }) => {
     const [leads, setLeads] = useState<LeadWithProperty[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -78,6 +81,12 @@ const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack }) => {
 
     const handleAddLead = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!['Administrador', 'Gestor', 'Usuário'].includes(userRole)) {
+            alert('Acesso Negado: Apenas Administradores, Gestores e Usuários podem criar/editar leads.');
+            return;
+        }
+
         try {
             console.log('Dados sendo salvos:', {
                 id: isEditMode ? selectedLead?.id : 'novo',
@@ -119,6 +128,14 @@ const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack }) => {
 
                 if (error) throw error;
                 console.log('Insert result:', data);
+
+                // Log the action for creation
+                if (onLogAction) {
+                    onLogAction(
+                        'CRIAÇÃO DE LEAD',
+                        `Lead: ${newLead.name}, Email: ${newLead.email}`
+                    );
+                }
             }
 
             setIsModalOpen(false);
@@ -133,6 +150,12 @@ const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack }) => {
 
     const handleDeleteLead = async () => {
         if (!leadToDelete) return;
+
+        if (!['Administrador', 'Gestor'].includes(userRole)) {
+            alert('Acesso Negado: Apenas Administradores e Gestores podem excluir leads.');
+            setIsDeleteModalOpen(false);
+            return;
+        }
 
         try {
             const { error } = await supabase
@@ -244,17 +267,19 @@ const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack }) => {
                         <Download className="w-3.5 h-3.5" />
                         Exportar CSV
                     </button>
-                    <button
-                        onClick={() => {
-                            setIsEditMode(false);
-                            setNewLead({ name: '', email: '', phone: '', property_id: '', level: 'Frio', marking: '', role: '', company: '' });
-                            setIsModalOpen(true);
-                        }}
-                        className="h-10 px-4 rounded-xl bg-[#A64614] text-white font-semibold text-xs flex items-center gap-2 hover:bg-[#8A3A10] transition-all shadow-md shadow-orange-900/10"
-                    >
-                        <Plus className="w-3.5 h-3.5" />
-                        Adicionar Lead
-                    </button>
+                    {['Administrador', 'Gestor', 'Usuário'].includes(userRole) && (
+                        <button
+                            onClick={() => {
+                                setIsEditMode(false);
+                                setNewLead({ name: '', email: '', phone: '', property_id: '', level: 'Frio', marking: '', role: '', company: '' });
+                                setIsModalOpen(true);
+                            }}
+                            className="h-10 px-4 rounded-xl bg-[#A64614] text-white font-semibold text-xs flex items-center gap-2 hover:bg-[#8A3A10] transition-all shadow-md shadow-orange-900/10"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                            Adicionar Lead
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -362,22 +387,26 @@ const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack }) => {
                                                         <Eye className="w-4 h-4 text-blue-500 group-hover/item:scale-110 transition-transform" />
                                                         Visão Geral
                                                     </button>
-                                                    <button
-                                                        onClick={() => openEditModal(lead)}
-                                                        className="w-full px-4 py-2.5 text-left text-xs font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2 group/item"
-                                                    >
-                                                        <Edit2 className="w-4 h-4 text-orange-500 group-hover/item:scale-110 transition-transform" />
-                                                        Editar
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            confirmDelete(lead);
-                                                        }}
-                                                        className="w-full px-4 py-2.5 text-left text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-slate-50 mt-1 pt-2 group/item"
-                                                    >
-                                                        <Trash2 className="w-4 h-4 group-hover/item:scale-110 transition-transform" />
-                                                        Excluir
-                                                    </button>
+                                                    {['Administrador', 'Gestor', 'Usuário'].includes(userRole) && (
+                                                        <button
+                                                            onClick={() => openEditModal(lead)}
+                                                            className="w-full px-4 py-2.5 text-left text-xs font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2 group/item"
+                                                        >
+                                                            <Edit2 className="w-4 h-4 text-orange-500 group-hover/item:scale-110 transition-transform" />
+                                                            Editar
+                                                        </button>
+                                                    )}
+                                                    {['Administrador', 'Gestor'].includes(userRole) && (
+                                                        <button
+                                                            onClick={() => {
+                                                                confirmDelete(lead);
+                                                            }}
+                                                            className="w-full px-4 py-2.5 text-left text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-slate-50 mt-1 pt-2 group/item"
+                                                        >
+                                                            <Trash2 className="w-4 h-4 group-hover/item:scale-110 transition-transform" />
+                                                            Excluir
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </>
                                         )}

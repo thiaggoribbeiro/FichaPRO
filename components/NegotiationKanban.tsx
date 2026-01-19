@@ -5,7 +5,12 @@ import NegotiationCard from './NegotiationCard';
 import PageHeader from './PageHeader';
 import { Plus, Search, Filter, Layout as LayoutIcon, List, ChevronDown } from 'lucide-react';
 
-const NegotiationKanban: React.FC = () => {
+interface NegotiationKanbanProps {
+    userRole?: string;
+    onLogAction?: (action: string, details: string) => void;
+}
+
+const NegotiationKanban: React.FC<NegotiationKanbanProps> = ({ userRole = 'Visitante', onLogAction }) => {
     const [negotiations, setNegotiations] = useState<Negotiation[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -32,6 +37,10 @@ const NegotiationKanban: React.FC = () => {
     };
 
     const handleDragStart = (e: React.DragEvent, negotiation: Negotiation) => {
+        if (!['Administrador', 'Gestor', 'Usuário'].includes(userRole)) {
+            e.preventDefault();
+            return;
+        }
         setDraggingCard(negotiation);
         e.dataTransfer.setData('text/plain', negotiation.id);
         e.dataTransfer.effectAllowed = 'move';
@@ -44,6 +53,9 @@ const NegotiationKanban: React.FC = () => {
 
     const handleDrop = async (e: React.DragEvent, targetStage: NegotiationStage) => {
         e.preventDefault();
+        if (!['Administrador', 'Gestor', 'Usuário'].includes(userRole)) {
+            return;
+        }
         if (!draggingCard || draggingCard.stage === targetStage) return;
 
         // Impede mover de "Perdido" ou "Ganho" para estágios iniciais se necessário (lógica simples por enquanto)
@@ -52,8 +64,11 @@ const NegotiationKanban: React.FC = () => {
         //   return;
         // }
 
+        const card = draggingCard;
+        if (!card) return;
+
         const updatedNegotiations = negotiations.map(n =>
-            n.id === draggingCard.id ? { ...n, stage: targetStage } : n
+            n.id === card.id ? { ...n, stage: targetStage } : n
         );
         setNegotiations(updatedNegotiations);
 
@@ -61,9 +76,17 @@ const NegotiationKanban: React.FC = () => {
             const { error } = await supabase
                 .from('negotiations')
                 .update({ stage: targetStage })
-                .eq('id', draggingCard.id);
+                .eq('id', card.id);
 
             if (error) throw error;
+
+            // Log the action
+            if (onLogAction) {
+                onLogAction(
+                    'MOVIMENTAÇÃO DE NEGOCIAÇÃO',
+                    `Negociação: ${card.title} movida para ${targetStage}`
+                );
+            }
         } catch (error: any) {
             console.error('Erro ao atualizar estágio:', error.message);
             fetchNegotiations(); // Reverte em caso de erro
@@ -85,10 +108,10 @@ const NegotiationKanban: React.FC = () => {
                 <PageHeader
                     title="Canal de Negociação"
                     subtitle="Gerencie seu funil de vendas e acompanhe o progresso de cada oportunidade."
-                    actions={[
+                    actions={['Administrador', 'Gestor', 'Usuário'].includes(userRole) ? [
                         { label: 'Adicionar Etapa', onClick: () => { }, variant: 'secondary' },
                         { label: 'Adicionar Negociação', onClick: () => { }, icon: <Plus className="w-4 h-4" />, variant: 'primary' }
-                    ]}
+                    ] : []}
                 />
 
                 <div className="mt-8 flex items-center justify-between bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">

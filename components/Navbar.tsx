@@ -110,6 +110,16 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
                       <span className="material-symbols-outlined text-lg">person</span>
                       Perfil
                     </button>
+                    <button
+                      onClick={() => {
+                        onViewChange('tracking' as any);
+                        setShowMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-lg">history</span>
+                      Acompanhamento
+                    </button>
                     <button className="w-full px-4 py-2 text-left text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-2">
                       <span className="material-symbols-outlined text-lg">settings</span>
                       Configurações
