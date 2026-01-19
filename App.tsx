@@ -17,7 +17,7 @@ import LeadsListView from './components/LeadsListView';
 import NegotiationKanban from './components/NegotiationKanban';
 import PropertySheetModal from './components/PropertySheetModal';
 import PasswordChangeModal from './components/PasswordChangeModal';
-import ProcessTracking from './components/ProcessTracking';
+import SystemLogs from './components/SystemLogs';
 import { supabase } from './lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { Plus, Home, ArrowLeft, DollarSign, Users } from 'lucide-react';
@@ -584,7 +584,7 @@ const App: React.FC = () => {
   const renderContent = () => {
     if (currentView === 'tracking') {
       return (
-        <ProcessTracking onBack={() => setCurrentView('dashboard')} />
+        <SystemLogs onBack={() => setCurrentView('dashboard')} />
       );
     }
 
