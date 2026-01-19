@@ -96,7 +96,8 @@ const App: React.FC = () => {
     price: '',
     matricula: '',
     sequencial: '',
-    images: []
+    images: [],
+    status: PropertyStatus.DISPONIVEL
   });
 
   useEffect(() => {
@@ -107,6 +108,7 @@ const App: React.FC = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const newUser = session?.user ?? null;
+      console.log('Auth state changed:', _event, newUser?.email);
       setSession(newUser);
 
       if (newUser) {
@@ -151,8 +153,12 @@ const App: React.FC = () => {
       .select('*')
       .order('name', { ascending: true });
 
-    if (error) console.error('Erro ao buscar imóveis:', error.message);
-    else setProperties(data || []);
+    if (error) {
+      console.error('Erro ao buscar imóveis:', error.message);
+    } else {
+      console.log('Imóveis carregados com sucesso:', data?.length);
+      setProperties(data || []);
+    }
   };
 
   const logAction = useCallback(async (action: string, details: string) => {
@@ -239,6 +245,7 @@ const App: React.FC = () => {
         zip_code: formData.cep || 'N/A',
         is_complex: formData.isComplex,
         description: formData.description || 'N/A',
+        status: formData.status,
 
         // Parâmetros Construtivos
         land_area: parseFloat(formData.landArea || '0'),
@@ -321,7 +328,8 @@ const App: React.FC = () => {
         price: '',
         matricula: '',
         sequencial: '',
-        images: []
+        images: [],
+        status: PropertyStatus.DISPONIVEL
       } as PropertyData);
 
     } catch (error: any) {
@@ -364,10 +372,10 @@ const App: React.FC = () => {
 
       const search = searchTerm.toLowerCase();
       const matchesSearch = !searchTerm ||
-        p.name?.toLowerCase().includes(search) ||
-        p.address?.toLowerCase().includes(search) ||
-        p.city?.toLowerCase().includes(search) ||
-        p.registration?.toLowerCase().includes(search);
+        (p.name?.toLowerCase() || '').includes(search) ||
+        (p.address?.toLowerCase() || '').includes(search) ||
+        (p.city?.toLowerCase() || '').includes(search) ||
+        (p.registration?.toLowerCase() || '').includes(search);
 
       const matchesCity = !selectedCity || p.city === selectedCity;
       const matchesState = !selectedState || p.state === selectedState;
@@ -422,7 +430,8 @@ const App: React.FC = () => {
       price: property.market_rent?.toString() || '',
       matricula: property.registration || '',
       sequencial: property.sequencial || '',
-      images: []
+      images: [],
+      status: property.status || PropertyStatus.DISPONIVEL
     });
 
     setSelectedPropertyId(id);
@@ -727,17 +736,33 @@ const App: React.FC = () => {
                 </h2>
 
                 <div className="space-y-4">
-                  {/* Título do Imóvel */}
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Título do Imóvel</label>
-                    <input
-                      type="text"
-                      name="title"
-                      value={formData.title}
-                      onChange={handleInputChange}
-                      placeholder="Ex: Mansão Moderna com Piscina Infinita"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 placeholder:text-slate-400"
-                    />
+                  {/* Título do Imóvel e Situação */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Título do Imóvel</label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        placeholder="Ex: Mansão Moderna com Piscina Infinita"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 placeholder:text-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Situação</label>
+                      <select
+                        name="status"
+                        value={formData.status}
+                        onChange={handleInputChange}
+                        title="Selecione a situação do imóvel"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 bg-white"
+                      >
+                        {Object.values(PropertyStatus).map(status => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   {/* Tipo de Imóvel e Classificação */}

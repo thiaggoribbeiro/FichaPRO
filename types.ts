@@ -118,6 +118,7 @@ export interface PropertyData {
   matricula: string;
   sequencial: string;
   images: PropertyImage[];
+  status: PropertyStatus;
 }
 
 export interface Lead {
