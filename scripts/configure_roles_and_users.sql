@@ -18,10 +18,20 @@ ALTER TABLE public.profiles
 ADD COLUMN force_password_change BOOLEAN DEFAULT FALSE;
 END IF;
 END $$;
--- 2. Create the requested users in auth.users
--- Note: Creating users via SQL in auth.users requires the pgcrypto extension for crypt()
+-- 2. Ensure pgcrypto for password hashing
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
--- Luiz Barbosa
+-- 3. Update Thiago Ribeiro to Administrador (Fixed)
+UPDATE auth.users
+SET raw_user_meta_data = raw_user_meta_data || '{"role": "Administrador", "full_name": "Thiago Ribeiro"}'::jsonb
+WHERE email = 'thiago.ribeiro@avesta.com.br';
+UPDATE public.profiles
+SET role = 'Administrador'
+WHERE id IN (
+        SELECT id
+        FROM auth.users
+        WHERE email = 'thiago.ribeiro@avesta.com.br'
+    );
+-- 4. Create and Configure Luiz Barbosa as Gestor
 INSERT INTO auth.users (
         instance_id,
         id,
@@ -30,16 +40,10 @@ INSERT INTO auth.users (
         email,
         encrypted_password,
         email_confirmed_at,
-        recovery_sent_at,
-        last_sign_in_at,
         raw_app_meta_data,
         raw_user_meta_data,
         created_at,
-        updated_at,
-        confirmation_token,
-        email_change,
-        email_change_token_new,
-        recovery_token
+        updated_at
     )
 SELECT '00000000-0000-0000-0000-000000000000',
     gen_random_uuid(),
@@ -48,22 +52,27 @@ SELECT '00000000-0000-0000-0000-000000000000',
     'luiz.neto@parvi.com.br',
     crypt('Avesta2026', gen_salt('bf')),
     now(),
-    NULL,
-    NULL,
     '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Luiz Barbosa", "role": "Administrador"}',
+    '{"full_name":"Luiz Barbosa", "role": "Gestor"}',
     now(),
-    now(),
-    '',
-    '',
-    '',
-    ''
+    now()
 WHERE NOT EXISTS (
         SELECT 1
         FROM auth.users
         WHERE email = 'luiz.neto@parvi.com.br'
     );
--- Rodrigo Leite
+UPDATE auth.users
+SET raw_user_meta_data = raw_user_meta_data || '{"role": "Gestor"}'::jsonb
+WHERE email = 'luiz.neto@parvi.com.br';
+UPDATE public.profiles
+SET role = 'Gestor',
+    force_password_change = TRUE
+WHERE id IN (
+        SELECT id
+        FROM auth.users
+        WHERE email = 'luiz.neto@parvi.com.br'
+    );
+-- 5. Create and Configure Rodrigo Leite as Gestor
 INSERT INTO auth.users (
         instance_id,
         id,
@@ -72,16 +81,10 @@ INSERT INTO auth.users (
         email,
         encrypted_password,
         email_confirmed_at,
-        recovery_sent_at,
-        last_sign_in_at,
         raw_app_meta_data,
         raw_user_meta_data,
         created_at,
-        updated_at,
-        confirmation_token,
-        email_change,
-        email_change_token_new,
-        recovery_token
+        updated_at
     )
 SELECT '00000000-0000-0000-0000-000000000000',
     gen_random_uuid(),
@@ -90,40 +93,20 @@ SELECT '00000000-0000-0000-0000-000000000000',
     'rodrigo.leite@parvi.com.br',
     crypt('Avesta2026', gen_salt('bf')),
     now(),
-    NULL,
-    NULL,
     '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Rodrigo Leite", "role": "Administrador"}',
+    '{"full_name":"Rodrigo Leite", "role": "Gestor"}',
     now(),
-    now(),
-    '',
-    '',
-    '',
-    ''
+    now()
 WHERE NOT EXISTS (
         SELECT 1
         FROM auth.users
         WHERE email = 'rodrigo.leite@parvi.com.br'
     );
--- 3. Update profiles and user_metadata for these users
--- Update Metadata in auth.users (important because the app checks user_metadata.role)
 UPDATE auth.users
-SET raw_user_meta_data = raw_user_meta_data || '{"role": "Administrador"}'::jsonb
-WHERE email IN (
-        'luiz.neto@parvi.com.br',
-        'rodrigo.leite@parvi.com.br'
-    );
--- Update public.profiles using subquery to match ID
+SET raw_user_meta_data = raw_user_meta_data || '{"role": "Gestor"}'::jsonb
+WHERE email = 'rodrigo.leite@parvi.com.br';
 UPDATE public.profiles
-SET role = 'Administrador',
-    force_password_change = TRUE
-WHERE id IN (
-        SELECT id
-        FROM auth.users
-        WHERE email = 'luiz.neto@parvi.com.br'
-    );
-UPDATE public.profiles
-SET role = 'Administrador',
+SET role = 'Gestor',
     force_password_change = TRUE
 WHERE id IN (
         SELECT id
