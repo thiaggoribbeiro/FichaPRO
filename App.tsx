@@ -16,6 +16,7 @@ import LeadCaptureForm from './components/LeadCaptureForm';
 import LeadsListView from './components/LeadsListView';
 import NegotiationKanban from './components/NegotiationKanban';
 import PropertySheetModal from './components/PropertySheetModal';
+import PasswordChangeModal from './components/PasswordChangeModal';
 import { supabase } from './lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { Plus, Home, ArrowLeft, DollarSign, Users } from 'lucide-react';
@@ -55,6 +56,7 @@ const App: React.FC = () => {
   const [publicPropertyLoading, setPublicPropertyLoading] = useState(false);
   const [isLeadCaptured, setIsLeadCaptured] = useState(false);
   const [isSheetModalOpen, setIsSheetModalOpen] = useState(false);
+  const [forcePasswordChange, setForcePasswordChange] = useState(false);
 
   // Filter States
   const [searchTerm, setSearchTerm] = useState('');
@@ -104,6 +106,11 @@ const App: React.FC = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session?.user ?? null);
+      if (session?.user) {
+        checkForcePasswordChange(session.user.id);
+      } else {
+        setForcePasswordChange(false);
+      }
     });
 
     const params = new URLSearchParams(window.location.search);
@@ -132,6 +139,24 @@ const App: React.FC = () => {
 
     if (error) console.error('Erro ao buscar imóveis:', error.message);
     else setProperties(data || []);
+  };
+
+  const checkForcePasswordChange = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('force_password_change')
+        .eq('id', userId)
+        .single();
+
+      if (data && data.force_password_change) {
+        setForcePasswordChange(true);
+      } else {
+        setForcePasswordChange(false);
+      }
+    } catch (err) {
+      console.error('Erro ao verificar troca de senha obrigatória:', err);
+    }
   };
 
   const fetchPublicProperty = async (propertyId: string) => {
@@ -487,6 +512,10 @@ const App: React.FC = () => {
       }
     }
     return <Auth onAuthSuccess={() => fetchProperties()} />;
+  }
+
+  if (forcePasswordChange && session) {
+    return <PasswordChangeModal userId={session.id} onSuccess={() => setForcePasswordChange(false)} />;
   }
 
   const renderContent = () => {

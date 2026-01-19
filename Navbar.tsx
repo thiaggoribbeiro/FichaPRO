@@ -20,11 +20,11 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
 
-  // Força perfil admin para o Thiago Ribeiro (usuário logado no print)
+  // Perfil do usuário baseado nos metadados do Supabase Auth
   const profile: any = {
     ...user?.user_metadata,
-    role: 'admin',
-    full_name: user?.user_metadata?.full_name || 'Thiago Ribeiro',
+    role: user?.user_metadata?.role || 'Visitante',
+    full_name: user?.user_metadata?.full_name || 'Usuário',
   };
 
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -41,7 +41,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
               <h1 className="text-xl tracking-tight leading-tight">
                 <span className="font-light">Imob</span><span className="font-semibold">Lead</span>
               </h1>
-              <span className="text-[10px] text-slate-400 font-medium">v1.2.7</span>
+              <span className="text-[10px] text-slate-400 font-medium">v1.3.0</span>
             </div>
           </div>
 
@@ -84,8 +84,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
                 <div className="flex flex-col items-end mr-1 hidden sm:flex">
                   <span className="text-xs font-bold text-slate-900">{profile?.full_name || user.email}</span>
                   <span className="text-[10px] text-slate-500 font-medium whitespace-nowrap">
-                    {profile?.role === 'admin' ? 'Administrador' :
-                      profile?.role === 'manager' ? 'Gestor' : 'Usuário'}
+                    {profile?.role || 'Visitante'}
                   </span>
                 </div>
                 <button
@@ -158,8 +157,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
               <div className="text-center">
                 <h4 className="text-2xl font-bold text-slate-900 leading-tight">{profile.full_name}</h4>
                 <p className="text-[10px] font-bold text-[#A64614] uppercase tracking-[0.2em] mt-1">
-                  {profile?.role === 'admin' ? 'Administrador' :
-                    profile?.role === 'manager' ? 'Gestor' : 'Usuário'}
+                  {profile?.role || 'Visitante'}
                 </p>
               </div>
 
