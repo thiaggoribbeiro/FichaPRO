@@ -156,7 +156,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
         const userRole = user ? (user.user_metadata?.role || 'admin') : 'visitor';
 
         if (action === 'edit') {
-            if (['admin', 'manager', 'user'].includes(userRole)) {
+            if (['Administrador', 'Gestor', 'Usuário'].includes(userRole)) {
                 // Chamar a função de edição passada pelo App.tsx
                 if (onEditProperty) {
                     onEditProperty(property.id);
@@ -169,7 +169,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
         }
 
         if (action === 'delete') {
-            if (['admin', 'manager'].includes(userRole)) {
+            if (['Administrador', 'Gestor'].includes(userRole)) {
                 if (confirm('Tem certeza que deseja excluir este imóvel? Esta ação não pode ser desfeita.')) {
                     if (onDeleteProperty) {
                         onDeleteProperty(property.id);
