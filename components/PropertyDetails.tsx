@@ -242,6 +242,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                             <InfoItem label="Categoria Inquilino" value={property.tenant_category || 'N/A'} icon={<Briefcase className="w-4 h-4" />} />
                             <InfoItem label="Proprietário" value={property.owner} icon={<Building2 className="w-4 h-4" />} />
                             <InfoItem label="Ano de Compra" value={property.purchase_year?.toString() || 'N/A'} icon={<Calendar className="w-4 h-4" />} />
+                            <InfoItem label="Valor de Compra" value={formatCurrency(property.purchase_value || 0)} icon={<DollarSign className="w-4 h-4" />} />
                         </div>
 
                         {isComplex && units.length > 0 && (

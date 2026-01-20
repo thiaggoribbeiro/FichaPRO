@@ -318,9 +318,13 @@ const PropertyPDF: React.FC<PropertyPDFProps> = ({ property }) => {
                     {/* Footer / Contato */}
                     <View style={styles.footer}>
                         <View>
-                            <Text style={styles.footerLabel}>Valor de Aluguel</Text>
+                            <Text style={styles.footerLabel}>
+                                {property.fiche_type === 'Venda' ? 'Valor de Venda' : 'Valor de Aluguel'}
+                            </Text>
                             <Text style={styles.footerPrice}>
-                                {property.price ? formatCurrency(property.price) : 'Sob Consulta'}
+                                {property.fiche_type === 'Venda'
+                                    ? formatCurrency(property.market_value)
+                                    : (property.price ? formatCurrency(property.price) : 'Sob Consulta')}
                             </Text>
                         </View>
                         <View style={styles.contactInfo}>

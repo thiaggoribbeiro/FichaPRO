@@ -39,11 +39,12 @@ export interface Property {
   built_area: number;
   land_area: number;
   purchase_year: number | null;
+  purchase_value: number;
+  fiche_type: 'Venda' | 'Aluguel';
   matricula: string;
   sequencial: string;
   min_rent: number;
   variable_rent: number;
-  purchase_value: number;
   market_value: number;
   market_rent: number;
   rent_dy: number;
@@ -107,8 +108,11 @@ export interface PropertyData {
   spuValue: string;
   otherTaxes: string;
 
-  // Aluguel
+  // Aluguel e Valores
   price: string;
+  purchaseYear: string;
+  purchaseValue: string;
+  ficheType: 'Venda' | 'Aluguel';
 
   // Imagens Específicas
   terrainMarkingUrl: string | null;

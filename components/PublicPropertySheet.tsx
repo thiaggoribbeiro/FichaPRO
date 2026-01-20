@@ -236,9 +236,13 @@ const PublicPropertySheet: React.FC<PublicPropertySheetProps> = ({ property }) =
                 <div className="mx-5 mb-10 bg-[#A64614] text-white p-6 rounded-3xl shadow-xl">
                     <div className="flex items-center justify-between gap-5">
                         <div className="flex flex-col min-w-[120px]">
-                            <p className="text-white/70 text-[9px] font-bold uppercase tracking-[0.15em]">Valor de Aluguel</p>
+                            <p className="text-white/70 text-[9px] font-bold uppercase tracking-[0.15em]">
+                                {property.fiche_type === 'Venda' ? 'Valor de Venda' : 'Valor de Aluguel'}
+                            </p>
                             <p className="text-white text-xl font-extrabold tracking-tight">
-                                {property.price ? formatCurrency(property.price) : 'Sob Consulta'}
+                                {property.fiche_type === 'Venda'
+                                    ? formatCurrency(property.market_value)
+                                    : (property.price ? formatCurrency(property.price) : 'Sob Consulta')}
                             </p>
                         </div>
                         <button className="bg-white/20 hover:bg-white/30 text-white px-5 py-3.5 rounded-2xl font-bold text-xs transition-all border border-white/30 flex-1 uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95">

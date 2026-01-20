@@ -94,6 +94,9 @@ const App: React.FC = () => {
     frontViewUrl: null,
     sideViewUrl: null,
     price: '',
+    purchaseYear: '',
+    purchaseValue: '',
+    ficheType: 'Aluguel',
     matricula: '',
     sequencial: '',
     images: [],
@@ -266,6 +269,9 @@ const App: React.FC = () => {
         front_view_url: formData.frontViewUrl,
         side_view_url: formData.sideViewUrl,
         market_rent: parseFloat(formData.price || '0'),
+        purchase_year: formData.purchaseYear ? parseInt(formData.purchaseYear) : null,
+        purchase_value: parseFloat(formData.purchaseValue || '0'),
+        fiche_type: formData.ficheType,
         registration: formData.matricula || 'N/A',
         sequencial: formData.sequencial || 'N/A',
 
@@ -326,6 +332,9 @@ const App: React.FC = () => {
         frontViewUrl: null,
         sideViewUrl: null,
         price: '',
+        purchaseYear: '',
+        purchaseValue: '',
+        ficheType: 'Aluguel',
         matricula: '',
         sequencial: '',
         images: [],
@@ -428,6 +437,9 @@ const App: React.FC = () => {
       frontViewUrl: property.front_view_url,
       sideViewUrl: property.side_view_url,
       price: property.market_rent?.toString() || '',
+      purchaseYear: property.purchase_year?.toString() || '',
+      purchaseValue: property.purchase_value?.toString() || '',
+      ficheType: (property.fiche_type as 'Venda' | 'Aluguel') || 'Aluguel',
       matricula: property.registration || '',
       sequencial: property.sequencial || '',
       images: [],
@@ -1089,23 +1101,78 @@ const App: React.FC = () => {
               <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
                   <div className="w-8 h-8 bg-orange-50 text-[#A64614] rounded-lg flex items-center justify-center font-bold text-sm">6</div>
-                  Informações de Aluguel
+                  Informações Financeiras e de Ficha
                 </h2>
 
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Valor de Aluguel (R$)</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                      <DollarSign size={18} />
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Ano de Compra</label>
+                      <input
+                        type="text"
+                        name="purchaseYear"
+                        value={formData.purchaseYear || ''}
+                        onChange={handleInputChange}
+                        placeholder="Ex: 2020"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
+                      />
                     </div>
-                    <input
-                      type="text"
-                      name="price"
-                      value={formData.price || ''}
-                      onChange={handleInputChange}
-                      placeholder="0.000.000"
-                      className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
-                    />
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Valor de Compra (R$)</label>
+                      <input
+                        type="text"
+                        name="purchaseValue"
+                        value={formData.purchaseValue || ''}
+                        onChange={handleInputChange}
+                        placeholder="0.000.000"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Valor de Aluguel (R$)</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                          <DollarSign size={18} />
+                        </div>
+                        <input
+                          type="text"
+                          name="price"
+                          value={formData.price || ''}
+                          onChange={handleInputChange}
+                          placeholder="0.000.000"
+                          className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-3 ml-1">Opção de Ficha</label>
+                      <div className="flex bg-slate-100 p-1 rounded-xl w-full">
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, ficheType: 'Venda' }))}
+                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${formData.ficheType === 'Venda'
+                            ? 'bg-white text-[#A64614] shadow-sm'
+                            : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                        >
+                          Venda
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, ficheType: 'Aluguel' }))}
+                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all ${formData.ficheType === 'Aluguel'
+                            ? 'bg-white text-[#A64614] shadow-sm'
+                            : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                        >
+                          Aluguel
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </section>
