@@ -52,6 +52,7 @@ export interface Property {
   has_ficha: boolean;
   image_url: string | null;
   parent_id: string | null;
+  fiche_available: boolean;
   created_at?: string;
 
   // Parâmetros Construtivos
@@ -123,6 +124,7 @@ export interface PropertyData {
   sequencial: string;
   images: PropertyImage[];
   status: PropertyStatus;
+  fiche_available: boolean;
 }
 
 export interface Lead {

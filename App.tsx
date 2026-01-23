@@ -58,6 +58,7 @@ const App: React.FC = () => {
   const [isLeadCaptured, setIsLeadCaptured] = useState(false);
   const [isSheetModalOpen, setIsSheetModalOpen] = useState(false);
   const [forcePasswordChange, setForcePasswordChange] = useState(false);
+  const [isFetchingProperties, setIsFetchingProperties] = useState(false);
 
   // Filter States
   const [searchTerm, setSearchTerm] = useState('');
@@ -100,7 +101,8 @@ const App: React.FC = () => {
     matricula: '',
     sequencial: '',
     images: [],
-    status: PropertyStatus.DISPONIVEL
+    status: PropertyStatus.DISPONIVEL,
+    fiche_available: true
   });
 
   useEffect(() => {
@@ -151,16 +153,21 @@ const App: React.FC = () => {
   }, [session]);
 
   const fetchProperties = async () => {
-    const { data, error } = await supabase
-      .from('properties')
-      .select('*')
-      .order('name', { ascending: true });
+    try {
+      setIsFetchingProperties(true);
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .order('name', { ascending: true });
 
-    if (error) {
-      console.error('Erro ao buscar imóveis:', error.message);
-    } else {
-      console.log('Imóveis carregados com sucesso:', data?.length);
-      setProperties(data || []);
+      if (error) {
+        console.error('Erro ao buscar imóveis:', error.message);
+      } else {
+        console.log('Imóveis carregados com sucesso:', data?.length);
+        setProperties(data || []);
+      }
+    } finally {
+      setIsFetchingProperties(false);
     }
   };
 
@@ -277,6 +284,7 @@ const App: React.FC = () => {
 
         // Defaults e outros campos
         has_ficha: !!(formData.terrainMarkingUrl && formData.aerialViewUrl),
+        fiche_available: formData.fiche_available,
       };
 
       let result;
@@ -338,7 +346,8 @@ const App: React.FC = () => {
         matricula: '',
         sequencial: '',
         images: [],
-        status: PropertyStatus.DISPONIVEL
+        status: PropertyStatus.DISPONIVEL,
+        fiche_available: true
       } as PropertyData);
 
     } catch (error: any) {
@@ -389,13 +398,14 @@ const App: React.FC = () => {
       const matchesCity = !selectedCity || p.city === selectedCity;
       const matchesState = !selectedState || p.state === selectedState;
       const matchesStatus = !selectedStatus || p.status === selectedStatus;
-      const matchesFicha = !selectedFichaStatus ||
-        (selectedFichaStatus === 'with' ? p.has_ficha : !p.has_ficha);
+
+      const matchesFichaStatus = !selectedFichaStatus ||
+        (selectedFichaStatus === 'available' ? p.fiche_available : !p.fiche_available);
 
       const matchesCategory = selectedCategory === 'all' ||
         (selectedCategory === 'complex' ? p.is_complex : !p.is_complex);
 
-      return matchesSearch && matchesCity && matchesState && matchesStatus && matchesFicha && matchesCategory;
+      return matchesSearch && matchesCity && matchesState && matchesStatus && matchesFichaStatus && matchesCategory;
     });
   }, [properties, searchTerm, selectedCity, selectedState, selectedStatus, selectedFichaStatus, selectedCategory]);
 
@@ -443,7 +453,8 @@ const App: React.FC = () => {
       matricula: property.registration || '',
       sequencial: property.sequencial || '',
       images: [],
-      status: property.status || PropertyStatus.DISPONIVEL
+      status: property.status || PropertyStatus.DISPONIVEL,
+      fiche_available: property.fiche_available ?? true
     });
 
     setSelectedPropertyId(id);
@@ -664,7 +675,12 @@ const App: React.FC = () => {
             cities={uniqueCities} states={uniqueStates}
           />
 
-          {filteredProperties.length === 0 ? (
+          {isFetchingProperties ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <div className="w-10 h-10 border-4 border-[#A64614] border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-slate-500 font-medium">Carregando imóveis...</p>
+            </div>
+          ) : filteredProperties.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
               <Home className="w-16 h-16 text-slate-200 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-slate-800 mb-2">Nenhum imóvel encontrado</h3>
@@ -762,7 +778,7 @@ const App: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Situação</label>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Situação do Imóvel</label>
                       <select
                         name="status"
                         value={formData.status}
@@ -777,21 +793,32 @@ const App: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Tipo de Imóvel e Classificação */}
+                  {/* Ficha Disponível? */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Tipo de Imóvel</label>
-                      <select
-                        name="type"
-                        value={formData.type}
-                        onChange={handleInputChange}
-                        title="Selecione o tipo de imóvel"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 bg-white"
-                      >
-                        {Object.values(PropertyType).map(type => (
-                          <option key={type} value={type}>{type}</option>
-                        ))}
-                      </select>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Ficha Disponível?</label>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className={`flex-1 px-4 py-2.5 rounded-xl border-2 font-semibold text-xs transition-all ${formData.fiche_available
+                            ? 'border-green-600 bg-green-50 text-green-700'
+                            : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                            }`}
+                          onClick={() => setFormData(prev => ({ ...prev, fiche_available: true }))}
+                        >
+                          Sim
+                        </button>
+                        <button
+                          type="button"
+                          className={`flex-1 px-4 py-2.5 rounded-xl border-2 font-semibold text-xs transition-all ${!formData.fiche_available
+                            ? 'border-red-600 bg-red-50 text-red-700'
+                            : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                            }`}
+                          onClick={() => setFormData(prev => ({ ...prev, fiche_available: false }))}
+                        >
+                          Não
+                        </button>
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Classificação</label>
