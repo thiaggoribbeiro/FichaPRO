@@ -39,6 +39,11 @@ const PublicPropertySheet: React.FC<PublicPropertySheetProps> = ({ property }) =
         setSelectedImage(null);
     };
 
+    const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        const target = e.target as HTMLImageElement;
+        target.src = '/bg.png';
+    };
+
     return (
         <>
             {/* Image Modal */}
@@ -59,6 +64,7 @@ const PublicPropertySheet: React.FC<PublicPropertySheetProps> = ({ property }) =
                         alt="Visualização"
                         className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in zoom-in duration-200"
                         onClick={(e) => e.stopPropagation()}
+                        onError={handleImageError}
                     />
                 </div>
             )}
@@ -67,13 +73,14 @@ const PublicPropertySheet: React.FC<PublicPropertySheetProps> = ({ property }) =
                 {/* Header Buttons Removed */}
 
                 {/* Main Image Banner */}
-                <div className="relative w-full h-[320px] overflow-hidden">
-                    <div
-                        className="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-700 hover:scale-105 cursor-pointer"
-                        style={{ backgroundImage: `url("${property.aerial_view_url || property.image_url || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=430&q=80'}")` }}
-                        onClick={() => openImageModal(property.aerial_view_url || property.image_url || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=430&q=80')}
-                    >
-                    </div>
+                <div className="relative w-full h-[320px] overflow-hidden bg-slate-900">
+                    <img
+                        src={property.aerial_view_url || property.image_url || '/bg.png'}
+                        alt={property.name}
+                        className="w-full h-full object-cover transition-transform duration-700 hover:scale-105 cursor-pointer"
+                        onError={handleImageError}
+                        onClick={() => openImageModal(property.aerial_view_url || property.image_url || '/bg.png')}
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
                     <div className="absolute bottom-6 left-6 right-6">
                         <span className="inline-block px-2.5 py-1 mb-3 text-[9px] font-bold tracking-[0.2em] uppercase bg-[#A64614] text-white rounded-sm shadow-lg">Plus Imóveis</span>
@@ -159,12 +166,13 @@ const PublicPropertySheet: React.FC<PublicPropertySheetProps> = ({ property }) =
                     <div className="grid grid-cols-6 gap-2 h-[280px]">
                         <div
                             className="col-span-4 relative rounded-2xl overflow-hidden shadow-md group cursor-pointer"
-                            onClick={() => openImageModal(property.front_view_url || 'https://images.unsplash.com/photo-1600607687940-c52af09696d7?auto=format&fit=crop&w=800&q=80')}
+                            onClick={() => openImageModal(property.front_view_url || '/bg.png')}
                         >
                             <img
                                 alt="Frontal"
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                src={property.front_view_url || 'https://images.unsplash.com/photo-1600607687940-c52af09696d7?auto=format&fit=crop&w=800&q=80'}
+                                src={property.front_view_url || '/bg.png'}
+                                onError={handleImageError}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                             <div className="absolute bottom-3 left-3">
@@ -179,12 +187,13 @@ const PublicPropertySheet: React.FC<PublicPropertySheetProps> = ({ property }) =
                         <div className="col-span-2 grid grid-rows-2 gap-2">
                             <div
                                 className="relative rounded-2xl overflow-hidden shadow-md group cursor-pointer"
-                                onClick={() => openImageModal(property.side_view_url || 'https://images.unsplash.com/photo-1600566753190-17f0bb2a6c3e?auto=format&fit=crop&w=400&q=80')}
+                                onClick={() => openImageModal(property.side_view_url || '/bg.png')}
                             >
                                 <img
                                     alt="Lateral"
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                    src={property.side_view_url || 'https://images.unsplash.com/photo-1600566753190-17f0bb2a6c3e?auto=format&fit=crop&w=400&q=80'}
+                                    src={property.side_view_url || '/bg.png'}
+                                    onError={handleImageError}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
@@ -195,12 +204,13 @@ const PublicPropertySheet: React.FC<PublicPropertySheetProps> = ({ property }) =
                             </div>
                             <div
                                 className="relative rounded-2xl overflow-hidden shadow-md group border border-slate-700 cursor-pointer"
-                                onClick={() => openImageModal(property.terrain_marking_url || 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=400&q=80')}
+                                onClick={() => openImageModal(property.terrain_marking_url || '/bg.png')}
                             >
                                 <img
                                     alt="Marcação"
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                    src={property.terrain_marking_url || 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=400&q=80'}
+                                    src={property.terrain_marking_url || '/bg.png'}
+                                    onError={handleImageError}
                                 />
                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/20 transition-colors">
                                     <span className="text-white border border-white/50 rounded-full p-2 backdrop-blur-sm">

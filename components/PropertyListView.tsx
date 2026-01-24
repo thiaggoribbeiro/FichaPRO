@@ -25,8 +25,8 @@ const statusBadge = (status: PropertyStatus) => {
 
 const ficheBadge = (available: boolean) => {
     return (
-        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase whitespace-nowrap ${available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-            {available ? 'Ficha Disponível' : 'Ficha Indisponível'}
+        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase whitespace-nowrap ${available !== false ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {available !== false ? 'Ficha Disponível' : 'Ficha Indisponível'}
         </span>
     );
 };

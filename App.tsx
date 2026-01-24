@@ -155,19 +155,53 @@ const App: React.FC = () => {
   const fetchProperties = async () => {
     try {
       setIsFetchingProperties(true);
+      // Busca leve: apenas Campos necessários para listagem/cards
+      // Exclui campos pesados (Base64/LongText): terrain_marking_url, aerial_view_url, front_view_url, side_view_url, description
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select(`
+          id, 
+          name, 
+          address, 
+          neighborhood, 
+          city, 
+          state, 
+          zip_code, 
+          status, 
+          property_type, 
+          is_complex, 
+          registration, 
+          fiche_available, 
+          created_at,
+          parent_id,
+          has_ficha
+        `)
         .order('name', { ascending: true });
 
       if (error) {
         console.error('Erro ao buscar imóveis:', error.message);
       } else {
-        console.log('Imóveis carregados com sucesso:', data?.length);
-        setProperties(data || []);
+        console.log('Imóveis carregados com sucesso (modo leve):', data?.length);
+        setProperties((data as unknown as Property[]) || []);
       }
     } finally {
       setIsFetchingProperties(false);
+    }
+  };
+
+  const fetchFullProperty = async (id: string): Promise<Property | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error: any) {
+      console.error('Erro ao buscar detalhes completos do imóvel:', error.message);
+      return null;
     }
   };
 
@@ -400,7 +434,7 @@ const App: React.FC = () => {
       const matchesStatus = !selectedStatus || p.status === selectedStatus;
 
       const matchesFichaStatus = !selectedFichaStatus ||
-        (selectedFichaStatus === 'available' ? p.fiche_available : !p.fiche_available);
+        (selectedFichaStatus === 'available' ? p.fiche_available !== false : p.fiche_available === false);
 
       const matchesCategory = selectedCategory === 'all' ||
         (selectedCategory === 'complex' ? p.is_complex : !p.is_complex);
@@ -412,14 +446,33 @@ const App: React.FC = () => {
   const uniqueCities = useMemo(() => Array.from(new Set(properties.map(p => p.city).filter(Boolean))), [properties]);
   const uniqueStates = useMemo(() => Array.from(new Set(properties.map(p => p.state).filter(Boolean))), [properties]);
 
-  const handleGenerateFicha = (id: string) => {
-    setSelectedPropertyId(id);
-    setIsSheetModalOpen(true);
+  const handleGenerateFicha = async (id: string) => {
+    setLoading(true);
+    const fullProperty = await fetchFullProperty(id);
+    setLoading(false);
+
+    if (fullProperty) {
+      // Atualiza a lista local com os dados completos para este imóvel específico
+      setProperties(prev => prev.map(p => p.id === id ? fullProperty : p));
+      setSelectedPropertyId(id);
+      setIsSheetModalOpen(true);
+    } else {
+      alert('Não foi possível carregar os detalhes do imóvel para gerar a ficha.');
+    }
   };
 
-  const handleEditProperty = (id: string) => {
-    const property = properties.find(p => p.id === id);
-    if (!property) return;
+  const handleEditProperty = async (id: string) => {
+    setLoading(true);
+    const property = await fetchFullProperty(id);
+    setLoading(false);
+
+    if (!property) {
+      alert('Não foi possível carregar os detalhes do imóvel para edição.');
+      return;
+    }
+
+    // Atualiza a lista local com os dados completos
+    setProperties(prev => prev.map(p => p.id === id ? property : p));
 
     setFormData({
       title: property.name || '',
@@ -693,9 +746,17 @@ const App: React.FC = () => {
                   key={p.id}
                   property={p}
                   onGenerateFicha={handleGenerateFicha}
-                  onViewDetails={(id) => {
-                    setSelectedDetailPropertyId(id);
-                    setCurrentView('details');
+                  onViewDetails={async (id) => {
+                    setLoading(true);
+                    const fullData = await fetchFullProperty(id);
+                    setLoading(false);
+                    if (fullData) {
+                      setProperties(prev => prev.map(item => item.id === id ? fullData : item));
+                      setSelectedDetailPropertyId(id);
+                      setCurrentView('details');
+                    } else {
+                      alert('Erro ao carregar detalhes do imóvel.');
+                    }
                   }}
                 />
               ))}
@@ -704,9 +765,17 @@ const App: React.FC = () => {
             <PropertyListView
               properties={filteredProperties}
               onGenerateFicha={handleGenerateFicha}
-              onViewDetails={(id) => {
-                setSelectedDetailPropertyId(id);
-                setCurrentView('details');
+              onViewDetails={async (id) => {
+                setLoading(true);
+                const fullData = await fetchFullProperty(id);
+                setLoading(false);
+                if (fullData) {
+                  setProperties(prev => prev.map(item => item.id === id ? fullData : item));
+                  setSelectedDetailPropertyId(id);
+                  setCurrentView('details');
+                } else {
+                  alert('Erro ao carregar detalhes do imóvel.');
+                }
               }}
             />
           )}

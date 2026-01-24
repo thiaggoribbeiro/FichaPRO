@@ -33,8 +33,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property, onGenerateFicha, 
 
                 {/* Top Right Badges (Stacked) */}
                 <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
-                    <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase border shadow-sm ${property.fiche_available ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
-                        {property.fiche_available ? 'Ficha Disponível' : 'Ficha Indisponível'}
+                    <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase border shadow-sm ${property.fiche_available !== false ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200'}`}>
+                        {property.fiche_available !== false ? 'Ficha Disponível' : 'Ficha Indisponível'}
                     </div>
                     <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase border shadow-sm ${statusColors[property.status] || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
                         {property.status}
