@@ -41,7 +41,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
               <h1 className="text-xl tracking-tight leading-tight">
                 <span className="font-light">Imob</span><span className="font-semibold">Lead</span>
               </h1>
-              <span className="text-[10px] text-slate-400 font-medium">v1.4.1</span>
+              <span className="text-[10px] text-slate-400 font-medium">v1.4.2</span>
             </div>
           </div>
 
@@ -173,7 +173,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, currentView, onViewChange }) => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 flex flex-col gap-1">
-                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded ml-2">v1.4.2</span>
+                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Status</span>
                   <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     ATIVO
