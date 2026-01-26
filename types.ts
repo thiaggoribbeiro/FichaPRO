@@ -124,6 +124,7 @@ export interface PropertyData {
   sequencial: string;
   images: PropertyImage[];
   status: PropertyStatus;
+  owner: string;
   fiche_available: boolean;
 }
 

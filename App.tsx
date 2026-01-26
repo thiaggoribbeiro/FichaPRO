@@ -108,6 +108,7 @@ const App: React.FC = () => {
     sequencial: '',
     images: [],
     status: PropertyStatus.DISPONIVEL,
+    owner: '',
     fiche_available: true
   });
 
@@ -328,6 +329,7 @@ const App: React.FC = () => {
 
         // Defaults e outros campos
         has_ficha: !!(formData.terrainMarkingUrl && formData.aerialViewUrl),
+        owner: formData.owner || 'N/A',
         fiche_available: formData.fiche_available,
       };
 
@@ -391,6 +393,7 @@ const App: React.FC = () => {
         sequencial: '',
         images: [],
         status: PropertyStatus.DISPONIVEL,
+        owner: '',
         fiche_available: true
       } as PropertyData);
 
@@ -518,6 +521,7 @@ const App: React.FC = () => {
         sequencial: property.sequencial || '',
         images: [],
         status: property.status || PropertyStatus.DISPONIVEL,
+        owner: property.owner || '',
         fiche_available: property.fiche_available ?? true
       });
 
@@ -882,8 +886,23 @@ const App: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Ficha Disponível? */}
+                  {/* Proprietário e Ficha Disponível? */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Proprietário</label>
+                      <select
+                        name="owner"
+                        value={formData.owner}
+                        onChange={handleInputChange}
+                        title="Selecione o proprietário"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#A64614]/20 focus:border-[#A64614] transition-all text-slate-700 bg-white"
+                      >
+                        <option value="">Selecione um proprietário</option>
+                        {['AVESTA', 'CASA AMARELA', 'EMAC', 'KEPA', 'PLUS IMÓVEIS', 'PPBB', 'REDSHIFT'].sort().map(owner => (
+                          <option key={owner} value={owner}>{owner}</option>
+                        ))}
+                      </select>
+                    </div>
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Ficha Disponível?</label>
                       <div className="flex gap-2">
@@ -909,6 +928,9 @@ const App: React.FC = () => {
                         </button>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">Classificação</label>
                       <div className="flex gap-2">
