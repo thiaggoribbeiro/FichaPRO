@@ -4,6 +4,7 @@ import PublicPropertySheet from './PublicPropertySheet';
 import PropertyPDF from './PropertyPDF';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { X, Share2, FileDown } from 'lucide-react';
+import Toast, { ToastType } from './Toast';
 
 interface PropertySheetModalProps {
     property: Property;
@@ -11,10 +12,16 @@ interface PropertySheetModalProps {
 }
 
 const PropertySheetModal: React.FC<PropertySheetModalProps> = ({ property, onClose }) => {
+    const [toast, setToast] = React.useState<{ message: string; type: ToastType } | null>(null);
+
+    const showToast = (message: string, type: ToastType = 'info') => {
+        setToast({ message, type });
+    };
+
     const handleShare = () => {
         const url = `${window.location.origin}${window.location.pathname}?p=${property.id}`;
         navigator.clipboard.writeText(url);
-        alert('Link da ficha copiado para o clipboard!');
+        showToast('Link da ficha copiado para o clipboard!', 'success');
     };
 
     return (
@@ -64,6 +71,13 @@ const PropertySheetModal: React.FC<PropertySheetModalProps> = ({ property, onClo
                     </div>
                 </div>
             </div>
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 };

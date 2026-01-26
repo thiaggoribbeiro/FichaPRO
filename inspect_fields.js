@@ -12,18 +12,45 @@ const env = Object.fromEntries(
 const supabase = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY);
 
 async function inspectFields() {
-    const { data, error } = await supabase.from('properties').select('*').limit(1);
-    if (error) {
-        console.error(error);
+    console.log("Checking total count...");
+    const { count, error: countError } = await supabase
+        .from('properties')
+        .select('*', { count: 'exact', head: true });
+
+    if (countError) {
+        console.error("Count Error:", countError);
+    } else {
+        console.log("Total properties in table:", count);
+    }
+
+    console.log("\nFetching one ID to test single fetch...");
+    const { data: listData, error: listError } = await supabase
+        .from('properties')
+        .select('id')
+        .limit(1);
+
+    if (listError || !listData || listData.length === 0) {
+        console.error("Could not get an ID to test:", listError);
         return;
     }
-    if (data && data.length > 0) {
-        console.log("Fields in properties table:");
-        console.log(Object.keys(data[0]));
-        console.log("Full first record sample:");
-        console.log(JSON.stringify(data[0], null, 2));
+
+    const testId = listData[0].id;
+    console.log("Testing fetchFullProperty with ID:", testId);
+
+    const { data: fullData, error: fullError } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', testId)
+        .single();
+
+    if (fullError) {
+        console.error("fetchFullProperty FAILED!");
+        console.error("Error Message:", fullError.message);
+        console.error("Error Hint:", fullError.hint);
+        console.error("Error Details:", fullError.details);
     } else {
-        console.log("No data found in properties table.");
+        console.log("fetchFullProperty successful!");
+        console.log("Record keys:", Object.keys(fullData));
     }
 }
 

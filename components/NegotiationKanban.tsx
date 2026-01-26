@@ -8,9 +8,10 @@ import { Plus, Search, Filter, Layout as LayoutIcon, List, ChevronDown } from 'l
 interface NegotiationKanbanProps {
     userRole?: string;
     onLogAction?: (action: string, details: string) => void;
+    showToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
-const NegotiationKanban: React.FC<NegotiationKanbanProps> = ({ userRole = 'Visitante', onLogAction }) => {
+const NegotiationKanban: React.FC<NegotiationKanbanProps> = ({ userRole = 'Visitante', onLogAction, showToast }) => {
     const [negotiations, setNegotiations] = useState<Negotiation[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -58,11 +59,11 @@ const NegotiationKanban: React.FC<NegotiationKanbanProps> = ({ userRole = 'Visit
         }
         if (!draggingCard || draggingCard.stage === targetStage) return;
 
-        // Impede mover de "Perdido" ou "Ganho" para estágios iniciais se necessário (lógica simples por enquanto)
-        // if (draggingCard.stage === NegotiationStage.CLOSED_LOST || draggingCard.stage === NegotiationStage.CLOSED_WON) {
-        //   alert('Negociações finalizadas não podem ser movidas.');
-        //   return;
-        // }
+        // Impede mover de "Perdido" ou "Ganho" para estágios iniciais se necessário
+        if (draggingCard.stage === NegotiationStage.CLOSED_LOST || draggingCard.stage === NegotiationStage.CLOSED_WON) {
+            if (showToast) showToast('Negociações finalizadas não podem ser movidas.', 'warning');
+            return;
+        }
 
         const card = draggingCard;
         if (!card) return;

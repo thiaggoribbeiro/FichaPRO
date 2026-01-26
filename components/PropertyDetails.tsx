@@ -34,10 +34,11 @@ interface PropertyDetailsProps {
     onGenerateFicha: (id: string) => void;
     onEditProperty?: (id: string) => void; // Prop para editar imóvel
     onDeleteProperty?: (id: string) => void; // Prop para excluir imóvel
+    showToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
     user?: any; // Adicionando prop user
 }
 
-const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperties, onBack, onGenerateFicha, onEditProperty, onDeleteProperty, user }) => {
+const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperties, onBack, onGenerateFicha, onEditProperty, onDeleteProperty, showToast, user }) => {
     const [generatingPDF, setGeneratingPDF] = useState(false);
 
     const handleGeneratePDF = async () => {
@@ -46,7 +47,8 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
             await generatePropertyPDF(property);
         } catch (error) {
             console.error('Erro ao gerar PDF:', error);
-            alert('Erro ao gerar a ficha do imóvel. Tente novamente.');
+            if (showToast) showToast('Erro ao gerar a ficha do imóvel. Tente novamente.', 'error');
+            else alert('Erro ao gerar a ficha do imóvel. Tente novamente.');
         } finally {
             setGeneratingPDF(false);
         }
@@ -161,10 +163,12 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                 if (onEditProperty) {
                     onEditProperty(property.id);
                 } else {
-                    alert('Funcionalidade de edição não disponível.');
+                    if (showToast) showToast('Funcionalidade de edição não disponível.', 'warning');
+                    else alert('Funcionalidade de edição não disponível.');
                 }
             } else {
-                alert('Acesso Negado: Apenas usuários autenticados podem editar imóveis. Visitantes não possuem permissão.');
+                if (showToast) showToast('Acesso Negado: Apenas usuários autenticados podem editar imóveis. Visitantes não possuem permissão.', 'error');
+                else alert('Acesso Negado: Apenas usuários autenticados podem editar imóveis. Visitantes não possuem permissão.');
             }
         }
 
@@ -174,11 +178,13 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                     if (onDeleteProperty) {
                         onDeleteProperty(property.id);
                     } else {
-                        alert('Funcionalidade de exclusão não disponível.');
+                        if (showToast) showToast('Funcionalidade de exclusão não disponível.', 'warning');
+                        else alert('Funcionalidade de exclusão não disponível.');
                     }
                 }
             } else {
-                alert('Acesso Negado: Apenas Administradores e Gestores podem excluir imóveis.');
+                if (showToast) showToast('Acesso Negado: Apenas Administradores e Gestores podem excluir imóveis.', 'error');
+                else alert('Acesso Negado: Apenas Administradores e Gestores podem excluir imóveis.');
             }
         }
     };
@@ -354,29 +360,29 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                                 title="Marcação do Terreno"
                                 imageUrl={property.terrain_marking_url}
                                 fallback="/bg.png"
-                                onEdit={() => alert('Editar: Marcação do Terreno')}
-                                onDelete={() => confirm('Excluir imagem?') && alert('Excluída')}
+                                onEdit={() => showToast ? showToast('Editar: Marcação do Terreno') : alert('Editar: Marcação do Terreno')}
+                                onDelete={() => confirm('Excluir imagem?') && (showToast ? showToast('Excluída', 'success') : alert('Excluída'))}
                             />
                             <ImageCard
                                 title="Visão Aérea"
                                 imageUrl={property.aerial_view_url}
                                 fallback="/bg.png"
-                                onEdit={() => alert('Editar: Visão Aérea')}
-                                onDelete={() => confirm('Excluir imagem?') && alert('Excluída')}
+                                onEdit={() => showToast ? showToast('Editar: Visão Aérea') : alert('Editar: Visão Aérea')}
+                                onDelete={() => confirm('Excluir imagem?') && (showToast ? showToast('Excluída', 'success') : alert('Excluída'))}
                             />
                             <ImageCard
                                 title="Vista Frontal"
                                 imageUrl={property.front_view_url}
                                 fallback="/bg.png"
-                                onEdit={() => alert('Editar: Vista Frontal')}
-                                onDelete={() => confirm('Excluir imagem?') && alert('Excluída')}
+                                onEdit={() => showToast ? showToast('Editar: Vista Frontal') : alert('Editar: Vista Frontal')}
+                                onDelete={() => confirm('Excluir imagem?') && (showToast ? showToast('Excluída', 'success') : alert('Excluída'))}
                             />
                             <ImageCard
                                 title="Vista Lateral"
                                 imageUrl={property.side_view_url}
                                 fallback="/bg.png"
-                                onEdit={() => alert('Editar: Vista Lateral')}
-                                onDelete={() => confirm('Excluir imagem?') && alert('Excluída')}
+                                onEdit={() => showToast ? showToast('Editar: Vista Lateral') : alert('Editar: Vista Lateral')}
+                                onDelete={() => confirm('Excluir imagem?') && (showToast ? showToast('Excluída', 'success') : alert('Excluída'))}
                             />
                         </div>
                     </section>

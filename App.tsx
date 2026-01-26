@@ -21,6 +21,7 @@ import SystemLogs from './components/SystemLogs';
 import { supabase } from './lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { Plus, Home, ArrowLeft, DollarSign, Users } from 'lucide-react';
+import Toast, { ToastType } from './components/Toast';
 
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
   constructor(props: any) {
@@ -68,6 +69,11 @@ const App: React.FC = () => {
   const [selectedFichaStatus, setSelectedFichaStatus] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'complex' | 'unique'>('all');
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+
+  const showToast = useCallback((message: string, type: ToastType = 'info') => {
+    setToast({ message, type });
+  }, []);
 
   const [formData, setFormData] = useState<PropertyData>({
     title: '',
@@ -191,13 +197,17 @@ const App: React.FC = () => {
 
   const fetchFullProperty = async (id: string): Promise<Property | null> => {
     try {
+      console.log('Buscando detalhes do imóvel:', id);
       const { data, error } = await supabase
         .from('properties')
         .select('*')
         .eq('id', id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro Supabase (fetchFull):', error);
+        throw error;
+      }
       return data;
     } catch (error: any) {
       console.error('Erro ao buscar detalhes completos do imóvel:', error.message);
@@ -265,12 +275,12 @@ const App: React.FC = () => {
     // Check permission to create/edit property
     const userRole = session?.user_metadata?.role || 'Visitante';
     if (!['Administrador', 'Gestor', 'Usuário'].includes(userRole)) {
-      alert('Acesso Negado: Apenas Administradores, Gestores e Usuários podem salvar imóveis.');
+      showToast('Acesso Negado: Apenas Administradores, Gestores e Usuários podem salvar imóveis.', 'error');
       return;
     }
 
     if (!formData.title) {
-      alert('Por favor, insira pelo menos um título para o imóvel.');
+      showToast('Por favor, insira pelo menos um título para o imóvel.', 'warning');
       return;
     }
 
@@ -335,7 +345,7 @@ const App: React.FC = () => {
 
       if (result.error) throw result.error;
 
-      alert(selectedPropertyId ? 'Imóvel atualizado com sucesso!' : 'Imóvel cadastrado com sucesso!');
+      showToast(selectedPropertyId ? 'Imóvel atualizado com sucesso!' : 'Imóvel cadastrado com sucesso!', 'success');
       await fetchProperties();
 
       // Log the action
@@ -386,7 +396,7 @@ const App: React.FC = () => {
 
     } catch (error: any) {
       console.error('Erro ao salvar imóvel:', error);
-      alert('Erro ao salvar imóvel: ' + error.message);
+      showToast('Erro ao salvar imóvel: ' + error.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -457,68 +467,75 @@ const App: React.FC = () => {
       setSelectedPropertyId(id);
       setIsSheetModalOpen(true);
     } else {
-      alert('Não foi possível carregar os detalhes do imóvel para gerar a ficha.');
+      showToast('Não foi possível carregar os detalhes do imóvel para gerar a ficha.', 'error');
     }
   };
 
   const handleEditProperty = async (id: string) => {
-    setLoading(true);
-    const property = await fetchFullProperty(id);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const property = await fetchFullProperty(id);
+      setLoading(false);
 
-    if (!property) {
-      alert('Não foi possível carregar os detalhes do imóvel para edição.');
-      return;
+      if (!property) {
+        showToast(`Não foi possível carregar os detalhes do imóvel (ID: ${id}) para edição. Verifique o console ou as permissões de acesso.`, 'error');
+        return;
+      }
+
+      // Atualiza a lista local com os dados completos
+      setProperties(prev => prev.map(p => p.id === id ? property : p));
+
+      setFormData({
+        title: property.name || '',
+        type: (property.property_type as PropertyType) || PropertyType.CASA,
+        description: property.description || '',
+        isComplex: property.is_complex || false,
+        address: property.address || '',
+        number: property.number || '',
+        neighborhood: property.neighborhood || '',
+        complement: property.complement || '',
+        city: property.city || '',
+        state: property.state || '',
+        cep: property.zip_code || '',
+        landArea: property.land_area?.toString() || '',
+        builtArea: property.built_area?.toString() || '',
+        mainQuota: property.main_quota?.toString() || '',
+        lateralQuota: property.lateral_quota?.toString() || '',
+        floors: property.floors?.toString() || '',
+        terrainConfig: property.terrain_config || 'regular',
+        iptuValue: property.iptu_value?.toString() || '',
+        spuValue: property.spu_value?.toString() || '',
+        otherTaxes: property.other_taxes?.toString() || '',
+        terrainMarkingUrl: property.terrain_marking_url,
+        aerialViewUrl: property.aerial_view_url,
+        frontViewUrl: property.front_view_url,
+        sideViewUrl: property.side_view_url,
+        price: property.market_rent?.toString() || '',
+        purchaseYear: property.purchase_year?.toString() || '',
+        purchaseValue: property.purchase_value?.toString() || '',
+        ficheType: (property.fiche_type as 'Venda' | 'Aluguel') || 'Aluguel',
+        matricula: property.registration || '',
+        sequencial: property.sequencial || '',
+        images: [],
+        status: property.status || PropertyStatus.DISPONIVEL,
+        fiche_available: property.fiche_available ?? true
+      });
+
+      setSelectedPropertyId(id);
+      setCurrentView('form');
+    } catch (error: any) {
+      console.error('Erro ao editar imóvel:', error);
+      showToast('Erro inesperado ao abrir o formulário de edição: ' + error.message, 'error');
+    } finally {
+      setLoading(false);
     }
-
-    // Atualiza a lista local com os dados completos
-    setProperties(prev => prev.map(p => p.id === id ? property : p));
-
-    setFormData({
-      title: property.name || '',
-      type: (property.property_type as PropertyType) || PropertyType.CASA,
-      description: property.description || '',
-      isComplex: property.is_complex || false,
-      address: property.address || '',
-      number: property.number || '',
-      neighborhood: property.neighborhood || '',
-      complement: property.complement || '',
-      city: property.city || '',
-      state: property.state || '',
-      cep: property.zip_code || '',
-      landArea: property.land_area?.toString() || '',
-      builtArea: property.built_area?.toString() || '',
-      mainQuota: property.main_quota?.toString() || '',
-      lateralQuota: property.lateral_quota?.toString() || '',
-      floors: property.floors?.toString() || '',
-      terrainConfig: property.terrain_config || 'regular',
-      iptuValue: property.iptu_value?.toString() || '',
-      spuValue: property.spu_value?.toString() || '',
-      otherTaxes: property.other_taxes?.toString() || '',
-      terrainMarkingUrl: property.terrain_marking_url,
-      aerialViewUrl: property.aerial_view_url,
-      frontViewUrl: property.front_view_url,
-      sideViewUrl: property.side_view_url,
-      price: property.market_rent?.toString() || '',
-      purchaseYear: property.purchase_year?.toString() || '',
-      purchaseValue: property.purchase_value?.toString() || '',
-      ficheType: (property.fiche_type as 'Venda' | 'Aluguel') || 'Aluguel',
-      matricula: property.registration || '',
-      sequencial: property.sequencial || '',
-      images: [],
-      status: property.status || PropertyStatus.DISPONIVEL,
-      fiche_available: property.fiche_available ?? true
-    });
-
-    setSelectedPropertyId(id);
-    setCurrentView('form');
   };
 
   const handleDeleteProperty = async (id: string) => {
     // Check permission to delete property
     const userRole = session?.user_metadata?.role || 'Visitante';
     if (!['Administrador', 'Gestor'].includes(userRole)) {
-      alert('Acesso Negado: Apenas Administradores e Gestores podem excluir imóveis.');
+      showToast('Acesso Negado: Apenas Administradores e Gestores podem excluir imóveis.', 'error');
       return;
     }
 
@@ -531,7 +548,7 @@ const App: React.FC = () => {
 
       if (error) throw error;
 
-      alert('Imóvel excluído com sucesso!');
+      showToast('Imóvel excluído com sucesso!', 'success');
 
       const deletedProperty = properties.find(p => p.id === id);
       await fetchProperties();
@@ -545,7 +562,7 @@ const App: React.FC = () => {
       setSelectedDetailPropertyId(null);
     } catch (error: any) {
       console.error('Erro ao excluir imóvel:', error);
-      alert('Erro ao excluir imóvel: ' + error.message);
+      showToast('Erro ao excluir imóvel: ' + error.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -589,7 +606,7 @@ const App: React.FC = () => {
 
   const handleGenerateAiDescription = async () => {
     if (!formData.title) {
-      alert("Por favor, preencha o título para que a IA possa gerar uma descrição.");
+      showToast("Por favor, preencha o título para que a IA possa gerar uma descrição.", 'warning');
       return;
     }
     setLoadingAi(true);
@@ -688,6 +705,7 @@ const App: React.FC = () => {
             userRole={session?.user_metadata?.role || 'Visitante'}
             onBack={() => setCurrentView('dashboard')}
             onLogAction={logAction}
+            showToast={showToast}
           />
         </div>
       );
@@ -699,6 +717,7 @@ const App: React.FC = () => {
           <NegotiationKanban
             userRole={session?.user_metadata?.role || 'Visitante'}
             onLogAction={logAction}
+            showToast={showToast}
           />
         </div>
       );
@@ -755,7 +774,7 @@ const App: React.FC = () => {
                       setSelectedDetailPropertyId(id);
                       setCurrentView('details');
                     } else {
-                      alert('Erro ao carregar detalhes do imóvel.');
+                      showToast('Erro ao carregar detalhes do imóvel.', 'error');
                     }
                   }}
                 />
@@ -774,7 +793,7 @@ const App: React.FC = () => {
                   setSelectedDetailPropertyId(id);
                   setCurrentView('details');
                 } else {
-                  alert('Erro ao carregar detalhes do imóvel.');
+                  showToast('Erro ao carregar detalhes do imóvel.', 'error');
                 }
               }}
             />
@@ -797,6 +816,7 @@ const App: React.FC = () => {
           onGenerateFicha={handleGenerateFicha}
           onEditProperty={handleEditProperty}
           onDeleteProperty={handleDeleteProperty}
+          showToast={showToast}
           user={session}
         />
       );
@@ -1340,6 +1360,14 @@ const App: React.FC = () => {
             setIsSheetModalOpen(false);
             setSelectedPropertyId(null);
           }}
+        />
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
       )}
     </Layout>

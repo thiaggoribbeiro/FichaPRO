@@ -17,9 +17,10 @@ interface LeadsListViewProps {
     onBack?: () => void;
     userRole?: string;
     onLogAction?: (action: string, details: string) => void;
+    showToast?: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
-const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack, userRole = 'Visitante', onLogAction }) => {
+const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack, userRole = 'Visitante', onLogAction, showToast }) => {
     const [leads, setLeads] = useState<LeadWithProperty[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -83,7 +84,8 @@ const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack, userRole = 'Visit
         e.preventDefault();
 
         if (!['Administrador', 'Gestor', 'Usuário'].includes(userRole)) {
-            alert('Acesso Negado: Apenas Administradores, Gestores e Usuários podem criar/editar leads.');
+            if (showToast) showToast('Acesso Negado: Apenas Administradores, Gestores e Usuários podem criar/editar leads.', 'error');
+            else alert('Acesso Negado: Apenas Administradores, Gestores e Usuários podem criar/editar leads.');
             return;
         }
 
@@ -144,7 +146,8 @@ const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack, userRole = 'Visit
             setNewLead({ name: '', email: '', phone: '', property_id: '', level: 'Frio', marking: '', role: '', company: '' });
             fetchLeads();
         } catch (error: any) {
-            alert('Erro ao salvar lead: ' + error.message);
+            if (showToast) showToast('Erro ao salvar lead: ' + error.message, 'error');
+            else alert('Erro ao salvar lead: ' + error.message);
         }
     };
 
@@ -152,7 +155,8 @@ const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack, userRole = 'Visit
         if (!leadToDelete) return;
 
         if (!['Administrador', 'Gestor'].includes(userRole)) {
-            alert('Acesso Negado: Apenas Administradores e Gestores podem excluir leads.');
+            if (showToast) showToast('Acesso Negado: Apenas Administradores e Gestores podem excluir leads.', 'error');
+            else alert('Acesso Negado: Apenas Administradores e Gestores podem excluir leads.');
             setIsDeleteModalOpen(false);
             return;
         }
@@ -168,7 +172,8 @@ const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack, userRole = 'Visit
             setLeadToDelete(null);
             fetchLeads();
         } catch (error: any) {
-            alert('Erro ao excluir lead: ' + error.message);
+            if (showToast) showToast('Erro ao excluir lead: ' + error.message, 'error');
+            else alert('Erro ao excluir lead: ' + error.message);
         }
     };
 

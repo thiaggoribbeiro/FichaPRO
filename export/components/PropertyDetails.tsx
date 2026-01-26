@@ -24,6 +24,7 @@ import {
     Download,
     Loader2
 } from 'lucide-react';
+import Toast, { ToastType } from './Toast';
 import { supabase } from '../lib/supabase';
 import { generatePropertyPDF } from '../services/pdfService';
 
@@ -39,6 +40,11 @@ interface PropertyDetailsProps {
 
 const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperties, onBack, onGenerateFicha, onEditProperty, onDeleteProperty, user }) => {
     const [generatingPDF, setGeneratingPDF] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+
+    const showToast = (message: string, type: ToastType = 'info') => {
+        setToast({ message, type });
+    };
 
     const handleGeneratePDF = async () => {
         try {
@@ -46,7 +52,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
             await generatePropertyPDF(property);
         } catch (error) {
             console.error('Erro ao gerar PDF:', error);
-            alert('Erro ao gerar a ficha do imóvel. Tente novamente.');
+            showToast('Erro ao gerar a ficha do imóvel. Tente novamente.', 'error');
         } finally {
             setGeneratingPDF(false);
         }
@@ -161,10 +167,10 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                 if (onEditProperty) {
                     onEditProperty(property.id);
                 } else {
-                    alert('Funcionalidade de edição não disponível.');
+                    showToast('Funcionalidade de edição não disponível.', 'warning');
                 }
             } else {
-                alert('Acesso Negado: Apenas usuários autenticados podem editar imóveis. Visitantes não possuem permissão.');
+                showToast('Acesso Negado: Apenas usuários autenticados podem editar imóveis. Visitantes não possuem permissão.', 'error');
             }
         }
 
@@ -174,11 +180,11 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                     if (onDeleteProperty) {
                         onDeleteProperty(property.id);
                     } else {
-                        alert('Funcionalidade de exclusão não disponível.');
+                        showToast('Funcionalidade de exclusão não disponível.', 'warning');
                     }
                 }
             } else {
-                alert('Acesso Negado: Apenas Administradores e Gestores podem excluir imóveis.');
+                showToast('Acesso Negado: Apenas Administradores e Gestores podem excluir imóveis.', 'error');
             }
         }
     };
@@ -354,35 +360,42 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({ property, allProperti
                                 title="Marcação do Terreno"
                                 imageUrl={property.terrain_marking_url}
                                 fallback="/bg.png"
-                                onEdit={() => alert('Editar: Marcação do Terreno')}
-                                onDelete={() => confirm('Excluir imagem?') && alert('Excluída')}
+                                onEdit={() => showToast('Editar: Marcação do Terreno')}
+                                onDelete={() => confirm('Excluir imagem?') && showToast('Excluída', 'success')}
                             />
                             <ImageCard
                                 title="Visão Aérea"
                                 imageUrl={property.aerial_view_url}
                                 fallback="/bg.png"
-                                onEdit={() => alert('Editar: Visão Aérea')}
-                                onDelete={() => confirm('Excluir imagem?') && alert('Excluída')}
+                                onEdit={() => showToast('Editar: Visão Aérea')}
+                                onDelete={() => confirm('Excluir imagem?') && showToast('Excluída', 'success')}
                             />
                             <ImageCard
                                 title="Vista Frontal"
                                 imageUrl={property.front_view_url}
                                 fallback="/bg.png"
-                                onEdit={() => alert('Editar: Vista Frontal')}
-                                onDelete={() => confirm('Excluir imagem?') && alert('Excluída')}
+                                onEdit={() => showToast('Editar: Vista Frontal')}
+                                onDelete={() => confirm('Excluir imagem?') && showToast('Excluída', 'success')}
                             />
                             <ImageCard
                                 title="Vista Lateral"
                                 imageUrl={property.side_view_url}
                                 fallback="/bg.png"
-                                onEdit={() => alert('Editar: Vista Lateral')}
-                                onDelete={() => confirm('Excluir imagem?') && alert('Excluída')}
+                                onEdit={() => showToast('Editar: Vista Lateral')}
+                                onDelete={() => confirm('Excluir imagem?') && showToast('Excluída', 'success')}
                             />
                         </div>
                     </section>
                 </div>
             </div>
 
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 };

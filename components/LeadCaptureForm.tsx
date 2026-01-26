@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { User, Mail, Phone, ArrowRight } from 'lucide-react';
+import Toast, { ToastType } from './Toast';
 
 interface LeadCaptureFormProps {
     propertyId: string;
@@ -17,6 +18,11 @@ const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({ propertyId, propertyN
         role: '',
         company: ''
     });
+    const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+
+    const showToast = (message: string, type: ToastType = 'info') => {
+        setToast({ message, type });
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -40,7 +46,7 @@ const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({ propertyId, propertyN
             onSuccess();
         } catch (error) {
             console.error('Erro ao capturar lead:', error);
-            alert('Ocorreu um erro. Por favor, tente novamente.');
+            showToast('Ocorreu um erro. Por favor, tente novamente.', 'error');
         } finally {
             setLoading(false);
         }
@@ -156,6 +162,13 @@ const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({ propertyId, propertyN
                     </p>
                 </div>
             </div>
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 };
