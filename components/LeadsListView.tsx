@@ -168,9 +168,20 @@ const LeadsListView: React.FC<LeadsListViewProps> = ({ onBack, userRole = 'Visit
                 .eq('id', leadToDelete.id);
 
             if (error) throw error;
+
+            // Log the action for deletion
+            if (onLogAction) {
+                onLogAction(
+                    'EXCLUSÃO DE LEAD',
+                    `Lead: ${leadToDelete.name}, Email: ${leadToDelete.email}`
+                );
+            }
+
+            if (showToast) showToast('Lead excluído com sucesso!', 'success');
+
             setIsDeleteModalOpen(false);
             setLeadToDelete(null);
-            fetchLeads();
+            await fetchLeads();
         } catch (error: any) {
             if (showToast) showToast('Erro ao excluir lead: ' + error.message, 'error');
             else alert('Erro ao excluir lead: ' + error.message);
